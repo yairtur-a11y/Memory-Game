@@ -327,7 +327,7 @@ let selectedPairs = DEFAULT_PAIRS.easy;
 let selectedCategory = "world"; // "world" | "america" | "family"
 let selectedMode = "flags";     // "flags" | "capitals" | "maps"
 let selectedLanguage = "en";
-let selectedGameType = "memory";
+let selectedGameType = "quiz";
 let selectedQuizDirection = "photo-to-name";
 
 const UI_TEXT = {
@@ -340,7 +340,7 @@ const UI_TEXT = {
     labelPairs:        "Pairs",
     labelQuestions:    "Questions",
     labelFeedback:     "Feedback",
-    btnMemory:         "🎴 Memory",
+    btnMemory:         "🎴 Cards",
     btnQuiz:           "❓ Quiz",
     btnType:           "✍️ Type",
     btnWorld:          "🌍 World",
@@ -408,7 +408,7 @@ const UI_TEXT = {
     labelPairs:        "זוגות",
     labelQuestions:    "שאלות",
     labelFeedback:     "משוב",
-    btnMemory:         "🎴 זיכרון",
+    btnMemory:         "🎴 קלפים",
     btnQuiz:           "❓ חידון",
     btnType:           "✍️ כתוב",
     btnWorld:          "🌍 עולם",
@@ -645,6 +645,22 @@ async function loadWorldData() {
   }
 }
 
+// Returns the largest contiguous polygon from a feature (Polygon or MultiPolygon).
+// Prevents sprawling overseas territories (France, US, etc.) from forcing a world-level view.
+function getLargestPolygon(feature) {
+  if (feature.geometry.type === 'Polygon') {
+    return { type: 'Feature', geometry: feature.geometry, properties: {} };
+  }
+  let maxArea = -1, best = null;
+  for (const polyCoords of feature.geometry.coordinates) {
+    const poly = { type: 'Feature', geometry: { type: 'Polygon', coordinates: polyCoords }, properties: {} };
+    const [[w, s], [e, n]] = d3.geoBounds(poly);
+    const area = (e - w) * (n - s);
+    if (area > maxArea) { maxArea = area; best = poly; }
+  }
+  return best;
+}
+
 function renderCountryMapSVG(code) {
   if (mapSvgCache[code]) return mapSvgCache[code];
   if (!worldData) return null;
@@ -659,14 +675,38 @@ function renderCountryMapSVG(code) {
     const targetFeature = countries.features.find(f => String(f.id) === String(numericId));
     if (!targetFeature) return null;
 
+    // Use only the largest contiguous body so Alaska/Hawaii/overseas territories
+    // don't force a world-level zoom.
+    const mainFeature = getLargestPolygon(targetFeature);
+
+    const [[west, south], [east, north]] = d3.geoBounds(mainFeature);
+    const centroid = d3.geoCentroid(mainFeature);
+
+    let dLon = east - west;
+    if (dLon < 0) dLon += 360; // antimeridian wrap (Russia, Fiji, …)
+    const dLat = north - south;
+
+    // Show the country at ~1/3 of the canvas; expand 3× for regional context.
+    // Clamp so we never show more than a continental slice (no world maps).
+    const CONTEXT = 3.0;
+    const viewDLon = Math.min(Math.max(dLon * CONTEXT, 8),  120);
+    const viewDLat = Math.min(Math.max(dLat * CONTEXT, 5),   80);
+
+    // Build a bounding-box GeoJSON feature centred on the country's centroid.
+    const lon0 = centroid[0] - viewDLon / 2;
+    const lon1 = centroid[0] + viewDLon / 2;
+    const lat0 = Math.max(centroid[1] - viewDLat / 2, -80);
+    const lat1 = Math.min(centroid[1] + viewDLat / 2,  80);
+    const bboxFeature = {
+      type: 'Feature',
+      geometry: {
+        type: 'Polygon',
+        coordinates: [[[lon0, lat0], [lon1, lat0], [lon1, lat1], [lon0, lat1], [lon0, lat0]]]
+      }
+    };
+
     const projection = d3.geoMercator();
-    const config = COUNTRY_MAP_CONFIG[code];
-    if (config) {
-      projection.center(config.center).scale(config.scale).translate([W / 2, H / 2]);
-    } else {
-      const padX = W * 0.20, padY = H * 0.20;
-      projection.fitExtent([[padX, padY], [W - padX, H - padY]], targetFeature);
-    }
+    projection.fitExtent([[0, 0], [W, H]], bboxFeature);
 
     const path = d3.geoPath(projection);
     const borders = topojson.mesh(worldData, worldData.objects.countries, (a, b) => a !== b);
