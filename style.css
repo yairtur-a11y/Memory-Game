@@ -907,6 +907,148 @@ button {
   display: none !important;
 }
 
+/* ─── Leaderboard ─── */
+.win-modal-content {
+  max-height: 90dvh;
+  overflow-y: auto;
+}
+
+#lb-section {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.lb-qualify-msg {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 8px;
+  text-align: center;
+}
+
+.lb-name-form {
+  display: flex;
+  gap: 8px;
+}
+
+.lb-name-input {
+  flex: 1;
+  padding: 9px 12px;
+  font-size: 14px;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  outline: none;
+  color: #1e293b;
+  font-family: inherit;
+  transition: border-color 0.15s;
+  min-width: 0;
+}
+
+.lb-name-input:focus {
+  border-color: #3b82f6;
+}
+
+.lb-save-btn {
+  padding: 9px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.lb-save-btn:hover {
+  background: #2563eb;
+}
+
+.lb-skip-btn {
+  display: block;
+  margin: 6px auto 0;
+  background: none;
+  border: none;
+  font-size: 12px;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 2px 8px;
+  transition: color 0.15s;
+}
+
+.lb-skip-btn:hover {
+  color: #64748b;
+}
+
+.lb-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+  margin: 14px 0 8px;
+  text-align: center;
+}
+
+.lb-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.lb-entry {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: #f8fafc;
+  font-size: 13px;
+}
+
+.lb-entry-current {
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  border: 1px solid #bfdbfe;
+}
+
+.lb-rank {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.lb-entry:nth-child(1) .lb-rank { background: #fef08a; color: #854d0e; }
+.lb-entry:nth-child(2) .lb-rank { background: #e2e8f0; color: #475569; }
+.lb-entry:nth-child(3) .lb-rank { background: #fed7aa; color: #9a3412; }
+
+.lb-name {
+  flex: 1;
+  font-weight: 600;
+  color: #1e293b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lb-score {
+  font-size: 12px;
+  color: #64748b;
+  white-space: nowrap;
+}
+
 /* ─── Utility ─── */
 .hidden {
   display: none !important;

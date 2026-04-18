@@ -140,6 +140,22 @@
         <h2 id="win-title">You Won!</h2>
         <p id="win-message"></p>
         <div id="win-pb" class="win-pb"></div>
+
+        <div id="lb-section">
+          <div id="lb-name-entry" class="hidden">
+            <p class="lb-qualify-msg" id="lb-qualify-msg"></p>
+            <div class="lb-name-form">
+              <input type="text" id="lb-name-input" class="lb-name-input" maxlength="20">
+              <button id="lb-save-btn" class="lb-save-btn" data-i18n="lbSave">Save</button>
+            </div>
+            <button id="lb-skip-btn" class="lb-skip-btn" data-i18n="lbSkip">Skip</button>
+          </div>
+          <div id="lb-table" class="hidden">
+            <p class="lb-title" data-i18n="lbTitle">Top 5</p>
+            <ol id="lb-list" class="lb-list"></ol>
+          </div>
+        </div>
+
         <div class="modal-buttons">
           <button id="play-again-btn"        class="primary-btn"   data-i18n="btnPlayAgain">Play Again</button>
           <button id="change-difficulty-btn" class="secondary-btn" data-i18n="btnChangeSettings">Change Settings</button>

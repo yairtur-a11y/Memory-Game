@@ -2,7 +2,7 @@
 // BUMP THIS VERSION on every push that changes any file.
 // Format: "vN" — just increment N each time (v2, v3, v4…)
 // ─────────────────────────────────────────────────────────────────────────────
-const CACHE_VERSION = "v10";
+const CACHE_VERSION = "v11";
 // ─────────────────────────────────────────────────────────────────────────────
 
 const CACHE_NAME = `memory-game-${CACHE_VERSION}`;

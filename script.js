@@ -149,6 +149,85 @@ function updatePbDisplay(t) {
   }
 }
 
+// ── Leaderboard ────────────────────────────────────────────────────────────
+
+function getLbKey() {
+  const diff = selectedCategory === "family" ? "any" : selectedDifficulty;
+  const mode = selectedCategory === "family" ? "family" : selectedMode;
+  return `lb_${selectedGameType}_${selectedCategory}_${mode}_${diff}_${selectedPairs}`;
+}
+
+function loadLeaderboard() {
+  try { return JSON.parse(localStorage.getItem(getLbKey())) || []; } catch { return []; }
+}
+
+function saveLeaderboard(board) {
+  try { localStorage.setItem(getLbKey(), JSON.stringify(board)); } catch {}
+}
+
+function getCurrentResult() {
+  if (selectedGameType === "memory") {
+    return { moves: gameState.moves, time: gameState.timer };
+  }
+  const total = quizState.questions.length;
+  const pct = Math.round((quizState.score / total) * 100);
+  return { pct, score: quizState.score, total, time: gameState.timer };
+}
+
+function isBetterThanEntry(current, entry) {
+  if (selectedGameType === "memory") {
+    if (current.moves !== entry.moves) return current.moves < entry.moves;
+    return current.time < entry.time;
+  }
+  if (current.pct !== entry.pct) return current.pct > entry.pct;
+  return current.time < entry.time;
+}
+
+function checkLbQualification() {
+  const board = loadLeaderboard();
+  if (board.length < 5) return true;
+  return isBetterThanEntry(getCurrentResult(), board[board.length - 1]);
+}
+
+function addToLeaderboard(name) {
+  const board = loadLeaderboard();
+  const entry = { name, ...getCurrentResult() };
+  board.push(entry);
+  board.sort((a, b) => {
+    if (selectedGameType === "memory") {
+      if (a.moves !== b.moves) return a.moves - b.moves;
+      return a.time - b.time;
+    }
+    if (a.pct !== b.pct) return b.pct - a.pct;
+    return a.time - b.time;
+  });
+  const top5 = board.slice(0, 5);
+  saveLeaderboard(top5);
+  return top5.indexOf(entry);
+}
+
+function renderLeaderboard(highlightIdx) {
+  const board = loadLeaderboard();
+  const lbTable = document.getElementById("lb-table");
+  const lbList = document.getElementById("lb-list");
+  if (board.length === 0) return;
+  const t = UI_TEXT[selectedLanguage];
+  lbList.innerHTML = "";
+  board.forEach((entry, i) => {
+    const li = document.createElement("li");
+    li.className = "lb-entry" + (i === highlightIdx ? " lb-entry-current" : "");
+    const scoreStr = selectedGameType === "memory"
+      ? t.pbMemoryRecord(entry.moves, formatTime(entry.time))
+      : t.pbQuizRecord(entry.pct, entry.score, entry.total, formatTime(entry.time));
+    li.innerHTML =
+      `<span class="lb-rank">${i + 1}</span>` +
+      `<span class="lb-name">${entry.name}</span>` +
+      `<span class="lb-score">${scoreStr}</span>`;
+    lbList.appendChild(li);
+  });
+  lbTable.classList.remove("hidden");
+}
+
 // ── Modal ──────────────────────────────────────────────────────────────────
 
 function showWinModal() {
@@ -165,6 +244,26 @@ function showWinModal() {
     winMessage.textContent = t.winMemoryMsg(gameState.moves, formatTime(gameState.timer));
   }
   updatePbDisplay(t);
+
+  // Leaderboard
+  const lbNameEntry = document.getElementById("lb-name-entry");
+  const lbTable    = document.getElementById("lb-table");
+  const lbNameInput = document.getElementById("lb-name-input");
+  const lbQualifyMsg = document.getElementById("lb-qualify-msg");
+
+  lbNameEntry.classList.add("hidden");
+  lbTable.classList.add("hidden");
+
+  if (checkLbQualification()) {
+    lbQualifyMsg.textContent = t.lbQualify;
+    lbNameInput.value = "";
+    lbNameInput.placeholder = t.lbNamePlaceholder;
+    lbNameEntry.classList.remove("hidden");
+    setTimeout(() => lbNameInput.focus(), 150);
+  } else {
+    renderLeaderboard(-1);
+  }
+
   winModal.classList.remove("hidden");
 }
 
@@ -262,9 +361,14 @@ const UI_TEXT = {
     pbMemoryRecord:    (moves, time) => `${moves} moves · ${time}`,
     pbQuizRecord:      (pct, score, total, time) => `${pct}% (${score}/${total}) · ${time}`,
     winHome:           "🏠 Home",
-    labelQuizDirection: "Question Style",
-    btnPhotoToName:    "📷 → 🏷️ Name",
-    btnNameToPhoto:    "🏷️ → 📷 Photo",
+    labelQuizDirection:  "Question Style",
+    btnPhotoToName:      "📷 → 🏷️ Name",
+    btnNameToPhoto:      "🏷️ → 📷 Photo",
+    lbTitle:             "Top 5",
+    lbQualify:           "🏅 You made the top 5! Enter your name:",
+    lbSave:              "Save",
+    lbSkip:              "Skip",
+    lbNamePlaceholder:   "Your name",
   },
   he: {
     labelLanguage:     "שפה / Language",
@@ -320,9 +424,14 @@ const UI_TEXT = {
     pbMemoryRecord:    (moves, time) => `${moves} מהלכים · ${time}`,
     pbQuizRecord:      (pct, score, total, time) => `${pct}% (${score}/${total}) · ${time}`,
     winHome:           "🏠 בית",
-    labelQuizDirection: "סגנון שאלה",
-    btnPhotoToName:    "📷 → 🏷️ שם",
-    btnNameToPhoto:    "🏷️ → 📷 תמונה",
+    labelQuizDirection:  "סגנון שאלה",
+    btnPhotoToName:      "📷 → 🏷️ שם",
+    btnNameToPhoto:      "🏷️ → 📷 תמונה",
+    lbTitle:             "טופ 5",
+    lbQualify:           "🏅 נכנסת לטופ 5! הכנס את שמך:",
+    lbSave:              "שמור",
+    lbSkip:              "דלג",
+    lbNamePlaceholder:   "השם שלך",
   },
 };
 
@@ -984,6 +1093,28 @@ winStartButton.addEventListener("click", async function () {
 
 document.querySelectorAll(".quiz-dir-btn").forEach(btn => {
   btn.addEventListener("click", () => setQuizDirection(btn.dataset.dir));
+});
+
+// ── Leaderboard save / skip ────────────────────────────────────────────────
+
+function handleLbSave() {
+  const input = document.getElementById("lb-name-input");
+  const name = input.value.trim();
+  if (!name) return;
+  const idx = addToLeaderboard(name);
+  document.getElementById("lb-name-entry").classList.add("hidden");
+  renderLeaderboard(idx);
+}
+
+document.getElementById("lb-save-btn").addEventListener("click", handleLbSave);
+
+document.getElementById("lb-name-input").addEventListener("keydown", e => {
+  if (e.key === "Enter") handleLbSave();
+});
+
+document.getElementById("lb-skip-btn").addEventListener("click", () => {
+  document.getElementById("lb-name-entry").classList.add("hidden");
+  renderLeaderboard(-1);
 });
 
 // ── Feedback settings ──────────────────────────────────────────────────────
