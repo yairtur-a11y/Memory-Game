@@ -103,8 +103,9 @@ function shuffleArray(array) {
 // ── Personal best ──────────────────────────────────────────────────────────
 
 function getPbKey() {
-  const diff = selectedMode === "family" ? "any" : selectedDifficulty;
-  return `pb_${selectedGameType}_${selectedMode}_${diff}_${selectedPairs}`;
+  const diff = selectedCategory === "family" ? "any" : selectedDifficulty;
+  const mode = selectedCategory === "family" ? "family" : selectedMode;
+  return `pb_${selectedGameType}_${selectedCategory}_${mode}_${diff}_${selectedPairs}`;
 }
 
 function loadPb(key) {
@@ -200,7 +201,8 @@ const DEFAULT_PAIRS = { easy: 4, medium: 6, hard: 8 };
 
 let selectedDifficulty = "easy";
 let selectedPairs = DEFAULT_PAIRS.easy;
-let selectedMode = "flags";
+let selectedCategory = "world"; // "world" | "america" | "family"
+let selectedMode = "flags";     // "flags" | "capitals" | "maps"
 let selectedLanguage = "en";
 let selectedGameType = "memory";
 let selectedQuizDirection = "photo-to-name";
@@ -209,6 +211,7 @@ const UI_TEXT = {
   en: {
     labelLanguage:     "Language / שפה",
     labelGameType:     "Game Type",
+    labelCategory:     "Category",
     labelMode:         "Mode",
     labelDifficulty:   "Difficulty",
     labelPairs:        "Pairs",
@@ -216,10 +219,12 @@ const UI_TEXT = {
     labelFeedback:     "Feedback",
     btnMemory:         "🎴 Memory",
     btnQuiz:           "❓ Quiz",
+    btnWorld:          "🌍 World",
+    btnAmerica:        "🇺🇸 America",
+    btnFamily:         "👨‍👩‍👧‍👦 Family",
     btnFlags:          "🏳️ Flags",
     btnCapitals:       "🏙️ Capitals",
     btnMaps:           "🗺️ Maps",
-    btnFamily:         "👨‍👩‍👧‍👦 Family",
     btnEasy:           "Easy",
     btnMedium:         "Medium",
     btnHard:           "Hard",
@@ -239,10 +244,13 @@ const UI_TEXT = {
     btnBack:           "Back",
     updateMsg:         "🔄 New version available",
     btnRefresh:        "Refresh",
-    subtitleFlags:     "Match every country to its flag",
-    subtitleCapitals:  "Match every country to its capital city",
-    subtitleMaps:      "Match every country to its location on the map",
-    subtitleFamily:    "Match every name to their photo",
+    subtitleWorldFlags:      "Match every country to its flag",
+    subtitleWorldCapitals:   "Match every country to its capital city",
+    subtitleWorldMaps:       "Match every country to its location on the map",
+    subtitleAmericaFlags:    "Match every US state to its flag",
+    subtitleAmericaCapitals: "Match every US state to its capital city",
+    subtitleAmericaMaps:     "Match every US state to its location on the map",
+    subtitleFamily:          "Match every name to their photo",
     winYouWon:         "You Won!",
     winPerfect:        "Perfect!",
     winQuizDone:       "Quiz Done!",
@@ -261,6 +269,7 @@ const UI_TEXT = {
   he: {
     labelLanguage:     "שפה / Language",
     labelGameType:     "סוג משחק",
+    labelCategory:     "קטגוריה",
     labelMode:         "מצב",
     labelDifficulty:   "רמת קושי",
     labelPairs:        "זוגות",
@@ -268,10 +277,12 @@ const UI_TEXT = {
     labelFeedback:     "משוב",
     btnMemory:         "🎴 זיכרון",
     btnQuiz:           "❓ חידון",
+    btnWorld:          "🌍 עולם",
+    btnAmerica:        "🇺🇸 אמריקה",
+    btnFamily:         "👨‍👩‍👧‍👦 משפחה",
     btnFlags:          "🏳️ דגלים",
     btnCapitals:       "🏙️ בירות",
     btnMaps:           "🗺️ מפות",
-    btnFamily:         "👨‍👩‍👧‍👦 משפחה",
     btnEasy:           "קל",
     btnMedium:         "בינוני",
     btnHard:           "קשה",
@@ -291,10 +302,13 @@ const UI_TEXT = {
     btnBack:           "חזרה",
     updateMsg:         "🔄 גרסה חדשה זמינה",
     btnRefresh:        "רענן",
-    subtitleFlags:     "התאם כל מדינה לדגל שלה",
-    subtitleCapitals:  "התאם כל מדינה לבירה שלה",
-    subtitleMaps:      "התאם כל מדינה למיקום שלה במפה",
-    subtitleFamily:    "התאם כל שם לתמונה שלו",
+    subtitleWorldFlags:      "התאם כל מדינה לדגל שלה",
+    subtitleWorldCapitals:   "התאם כל מדינה לבירה שלה",
+    subtitleWorldMaps:       "התאם כל מדינה למיקום שלה במפה",
+    subtitleAmericaFlags:    "התאם כל מדינה בארה״ב לדגל שלה",
+    subtitleAmericaCapitals: "התאם כל מדינה בארה״ב לבירה שלה",
+    subtitleAmericaMaps:     "התאם כל מדינה בארה״ב למיקום שלה במפה",
+    subtitleFamily:          "התאם כל שם לתמונה שלו",
     winYouWon:         "ניצחת!",
     winPerfect:        "מושלם!",
     winQuizDone:       "סיום חידון!",
@@ -312,22 +326,30 @@ const UI_TEXT = {
   },
 };
 
+function updateSubtitle() {
+  const t = UI_TEXT[selectedLanguage];
+  let key;
+  if (selectedCategory === "family") {
+    key = "subtitleFamily";
+  } else {
+    key = "subtitle" +
+      selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1) +
+      selectedMode.charAt(0).toUpperCase() + selectedMode.slice(1);
+  }
+  const subtitle = document.getElementById("start-subtitle");
+  if (subtitle && t[key]) subtitle.textContent = t[key];
+}
+
 function applyLanguageToUI(lang) {
   const t = UI_TEXT[lang];
-  // Update every element with data-i18n
   document.querySelectorAll("[data-i18n]").forEach(el => {
     const key = el.dataset.i18n;
     if (typeof t[key] === "string") el.textContent = t[key];
   });
-  // RTL direction for Hebrew
   document.querySelectorAll(".start-card, .win-modal-content").forEach(el => {
     el.dir = lang === "he" ? "rtl" : "";
   });
-  // Subtitle depends on current mode
-  const subtitleKey = "subtitle" + selectedMode.charAt(0).toUpperCase() + selectedMode.slice(1);
-  const subtitle = document.getElementById("start-subtitle");
-  if (subtitle && t[subtitleKey]) subtitle.textContent = t[subtitleKey];
-  // Pairs/Questions label depends on current game type
+  updateSubtitle();
   document.querySelectorAll(".pairs-label").forEach(el => {
     el.textContent = selectedGameType === "quiz" ? t.labelQuestions : t.labelPairs;
   });
@@ -349,6 +371,24 @@ function capitalName(c) {
   return selectedLanguage === "he" ? c.capitalHe : c.capital;
 }
 
+function stateName(s) {
+  return selectedLanguage === "he" ? s.nameHe : s.name;
+}
+
+function stateCapitalName(s) {
+  return selectedLanguage === "he" ? s.capitalHe : s.capital;
+}
+
+function setCategory(cat) {
+  selectedCategory = cat;
+  document.querySelectorAll(".cat-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.cat === cat);
+  });
+  updateSubtitle();
+  updateSettingsVisibility();
+  updatePairsDisplay();
+}
+
 function setGameType(type) {
   selectedGameType = type;
   document.querySelectorAll(".game-type-btn").forEach(btn => {
@@ -362,8 +402,11 @@ function setGameType(type) {
 }
 
 function updateSettingsVisibility() {
-  const isFamily      = selectedMode === "family";
-  const isFamilyQuiz  = isFamily && selectedGameType === "quiz";
+  const isFamily     = selectedCategory === "family";
+  const isFamilyQuiz = isFamily && selectedGameType === "quiz";
+  document.querySelectorAll("[data-setting='mode']").forEach(el => {
+    el.classList.toggle("setting-hidden", isFamily);
+  });
   document.querySelectorAll("[data-setting='difficulty']").forEach(el => {
     el.classList.toggle("setting-hidden", isFamily);
   });
@@ -381,19 +424,24 @@ function setQuizDirection(dir) {
 
 function setMode(mode) {
   selectedMode = mode;
-  document.querySelectorAll(".toggle-btn").forEach(btn => {
+  document.querySelectorAll(".mode-btn").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.mode === mode);
   });
-  const subtitleKey = "subtitle" + mode.charAt(0).toUpperCase() + mode.slice(1);
-  const subtitle = document.getElementById("start-subtitle");
-  if (subtitle) subtitle.textContent = UI_TEXT[selectedLanguage][subtitleKey] || "";
-  if (mode === "maps") loadWorldData();
-  updateSettingsVisibility();
+  updateSubtitle();
+  if (mode === "maps") {
+    if (selectedCategory === "america") loadUsMapData(); else loadWorldData();
+  }
   updatePairsDisplay();
 }
 
 function getPoolForDifficulty(difficulty) {
-  if (selectedMode === "family") return [...familyMembers];
+  if (selectedCategory === "family") return [...familyMembers];
+  if (selectedCategory === "america") {
+    if (difficulty === "easy")        return usStates.filter(s => s.difficulty === "easy");
+    if (difficulty === "medium")      return usStates.filter(s => ["easy", "medium"].includes(s.difficulty));
+    return [...usStates];
+  }
+  // world
   let pool;
   if (difficulty === "easy")        pool = allCountries.filter(c => c.difficulty === "easy");
   else if (difficulty === "medium") pool = allCountries.filter(c => ["easy", "medium"].includes(c.difficulty));
@@ -501,6 +549,61 @@ function renderCountryMapSVG(code) {
   }
 }
 
+// ── US State map rendering ─────────────────────────────────────────────────
+
+let usMapData = null;
+const stateMapSvgCache = {};
+
+async function loadUsMapData() {
+  if (usMapData) return;
+  try {
+    const res = await fetch("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json");
+    usMapData = await res.json();
+  } catch (e) {
+    console.error("Failed to load US map data:", e);
+  }
+}
+
+function renderStateMapSVG(fips) {
+  if (stateMapSvgCache[fips]) return stateMapSvgCache[fips];
+  if (!usMapData) return null;
+
+  try {
+    const W = 960, H = 600;
+    const projection = d3.geoAlbersUsa().scale(1280).translate([W / 2, H / 2]);
+    const path = d3.geoPath(projection);
+
+    const states  = topojson.feature(usMapData, usMapData.objects.states);
+    const borders = topojson.mesh(usMapData, usMapData.objects.states, (a, b) => a !== b);
+
+    const parts = [
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}">`,
+      `<rect width="${W}" height="${H}" fill="#bfdbfe"/>`,
+    ];
+
+    for (const feature of states.features) {
+      const d = path(feature);
+      if (!d) continue;
+      const isTarget = Number(feature.id) === fips;
+      parts.push(
+        `<path d="${d}" fill="${isTarget ? "#22c55e" : "#f1f5f9"}" ` +
+        `stroke="#94a3b8" stroke-width="${isTarget ? 1 : 0.3}"/>`
+      );
+    }
+
+    const borderD = path(borders);
+    if (borderD) parts.push(`<path d="${borderD}" fill="none" stroke="#94a3b8" stroke-width="0.3"/>`);
+
+    parts.push("</svg>");
+    const svg = parts.join("");
+    stateMapSvgCache[fips] = svg;
+    return svg;
+  } catch (e) {
+    console.error("State map render error for fips", fips, e);
+    return null;
+  }
+}
+
 // ── Memory: card deck ──────────────────────────────────────────────────────
 
 function buildCardDeck() {
@@ -511,7 +614,7 @@ function buildCardDeck() {
 
   const cards = [];
 
-  if (selectedMode === "family") {
+  if (selectedCategory === "family") {
     for (const member of pool) {
       cards.push({ type: "family-name",  display: member.name, pairId: member.code });
       cards.push({ type: "family-photo", display: member.name, pairId: member.code, image: member.image });
@@ -520,18 +623,21 @@ function buildCardDeck() {
   }
 
   for (let i = 0; i < pool.length; i++) {
-    cards.push({
-      type: "country",
-      display: countryName(pool[i]),
-      pairId: pool[i].code
-    });
+    const item = pool[i];
+    const nameText = selectedCategory === "america" ? stateName(item) : countryName(item);
+    cards.push({ type: "country", display: nameText, pairId: item.code });
 
     if (selectedMode === "flags") {
-      cards.push({ type: "flag",    display: countryName(pool[i]), pairId: pool[i].code });
+      cards.push({ type: "flag", display: nameText, pairId: item.code });
     } else if (selectedMode === "capitals") {
-      cards.push({ type: "capital", display: capitalName(pool[i]), pairId: pool[i].code });
+      const capText = selectedCategory === "america" ? stateCapitalName(item) : capitalName(item);
+      cards.push({ type: "capital", display: capText, pairId: item.code });
     } else {
-      cards.push({ type: "map",     display: countryName(pool[i]), pairId: pool[i].code });
+      if (selectedCategory === "america") {
+        cards.push({ type: "state-map", display: nameText, pairId: item.code, fips: item.fips });
+      } else {
+        cards.push({ type: "map", display: nameText, pairId: item.code });
+      }
     }
   }
 
@@ -555,6 +661,12 @@ function createCardBackHTML(cardData) {
   }
   if (cardData.type === "map") {
     const svg = renderCountryMapSVG(cardData.pairId);
+    return svg
+      ? `<div class="card-back map-card">${svg}</div>`
+      : `<div class="card-back map-card map-loading">🗺️</div>`;
+  }
+  if (cardData.type === "state-map") {
+    const svg = renderStateMapSVG(cardData.fips);
     return svg
       ? `<div class="card-back map-card">${svg}</div>`
       : `<div class="card-back map-card map-loading">🗺️</div>`;
@@ -691,7 +803,7 @@ function renderQuizQuestion() {
   quizScoreDisplay.textContent = `${quizState.score} / ${quizState.currentIndex}`;
 
   const promptEl = document.getElementById("quiz-prompt");
-  if (selectedMode === "family") {
+  if (selectedCategory === "family") {
     if (selectedQuizDirection === "name-to-photo") {
       promptEl.innerHTML = `<div class="quiz-text-prompt" dir="rtl">${q.correct.name}</div>`;
     } else {
@@ -701,14 +813,17 @@ function renderQuizQuestion() {
     promptEl.innerHTML =
       `<img class="quiz-flag" src="https://flagcdn.com/w320/${q.correct.code}.png" alt="Flag">`;
   } else if (selectedMode === "maps") {
-    const svg = renderCountryMapSVG(q.correct.code);
+    const svg = selectedCategory === "america"
+      ? renderStateMapSVG(q.correct.fips)
+      : renderCountryMapSVG(q.correct.code);
     promptEl.innerHTML = svg
       ? `<div class="quiz-map">${svg}</div>`
       : `<div class="quiz-map-loading">🗺️</div>`;
   } else {
-    // capitals mode: show country name, answer is the capital
+    // capitals mode: show name, answer is capital
+    const name = selectedCategory === "america" ? stateName(q.correct) : countryName(q.correct);
     const dir = selectedLanguage === "he" ? ' dir="rtl"' : "";
-    promptEl.innerHTML = `<div class="quiz-text-prompt"${dir}>${countryName(q.correct)}</div>`;
+    promptEl.innerHTML = `<div class="quiz-text-prompt"${dir}>${name}</div>`;
   }
 
   const answersEl = document.getElementById("quiz-answers");
@@ -717,21 +832,23 @@ function renderQuizQuestion() {
 
   q.answers.forEach(item => {
     const btn = document.createElement("button");
-    if (selectedMode === "family" && selectedQuizDirection === "name-to-photo") {
+    if (selectedCategory === "family" && selectedQuizDirection === "name-to-photo") {
       btn.className = "answer-btn answer-photo-btn";
       btn.innerHTML = `<img src="${item.image}" alt="${item.name}">`;
     } else {
       btn.className = "answer-btn";
-      if (selectedMode === "family") {
-        btn.textContent = item.name;
+      let answerText;
+      if (selectedCategory === "family") {
+        answerText = item.name;
         btn.setAttribute("dir", "rtl");
       } else if (selectedMode === "capitals") {
-        btn.textContent = capitalName(item);
+        answerText = selectedCategory === "america" ? stateCapitalName(item) : capitalName(item);
         if (selectedLanguage === "he") btn.setAttribute("dir", "rtl");
       } else {
-        btn.textContent = countryName(item);
+        answerText = selectedCategory === "america" ? stateName(item) : countryName(item);
         if (selectedLanguage === "he") btn.setAttribute("dir", "rtl");
       }
+      btn.textContent = answerText;
     }
     btn.dataset.code = item.code;
     btn.addEventListener("click", () => handleAnswer(btn, q));
@@ -789,10 +906,10 @@ function startQuiz() {
 // ── Start game ─────────────────────────────────────────────────────────────
 
 async function startGame() {
-  if (selectedMode === "maps") {
+  if (selectedMode === "maps" && selectedCategory !== "family") {
     startButton.disabled = true;
     startButton.textContent = selectedLanguage === "he" ? "טוען מפה…" : "Loading map…";
-    await loadWorldData();
+    if (selectedCategory === "america") await loadUsMapData(); else await loadWorldData();
     startButton.disabled = false;
     startButton.textContent = UI_TEXT[selectedLanguage].btnStart;
   }
@@ -814,7 +931,11 @@ document.querySelectorAll(".game-type-btn").forEach(btn => {
   btn.addEventListener("click", () => setGameType(btn.dataset.type));
 });
 
-document.querySelectorAll(".toggle-btn").forEach(btn => {
+document.querySelectorAll(".cat-btn").forEach(btn => {
+  btn.addEventListener("click", () => setCategory(btn.dataset.cat));
+});
+
+document.querySelectorAll(".mode-btn").forEach(btn => {
   btn.addEventListener("click", () => setMode(btn.dataset.mode));
 });
 

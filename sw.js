@@ -2,7 +2,7 @@
 // BUMP THIS VERSION on every push that changes any file.
 // Format: "vN" — just increment N each time (v2, v3, v4…)
 // ─────────────────────────────────────────────────────────────────────────────
-const CACHE_VERSION = "v8";
+const CACHE_VERSION = "v10";
 // ─────────────────────────────────────────────────────────────────────────────
 
 const CACHE_NAME = `memory-game-${CACHE_VERSION}`;
@@ -13,6 +13,7 @@ const ASSETS = [
   "./style.css",
   "./script.js",
   "./countries.js",
+  "./us-states.js",
   "./maps.js",
   "./family.js",
   "./feedback.js",
@@ -23,6 +24,7 @@ const ASSETS = [
   "https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js",
   "https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js",
   "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json",
+  "https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json",
 ];
 
 // ── Install ───────────────────────────────────────────────────────────────────

@@ -102,7 +102,10 @@ body {
 
 .diff-btn,
 .lang-btn,
-.feedback-btn {
+.feedback-btn,
+.quiz-dir-btn,
+.cat-btn,
+.mode-btn {
   flex: 1;
   padding: 9px 0;
 }
@@ -110,7 +113,10 @@ body {
 .toggle-btn,
 .diff-btn,
 .lang-btn,
-.feedback-btn {
+.feedback-btn,
+.quiz-dir-btn,
+.cat-btn,
+.mode-btn {
   font-size: 13px;
   font-weight: 600;
   border: 2px solid #e2e8f0;
@@ -125,7 +131,10 @@ body {
 .toggle-btn:hover:not(.active),
 .diff-btn:hover:not(.active),
 .lang-btn:hover:not(.active),
-.feedback-btn:hover:not(.active) {
+.feedback-btn:hover:not(.active),
+.quiz-dir-btn:hover:not(.active),
+.cat-btn:hover:not(.active),
+.mode-btn:hover:not(.active) {
   border-color: #93c5fd;
   color: #3b82f6;
 }
@@ -133,7 +142,10 @@ body {
 .toggle-btn.active,
 .diff-btn.active,
 .lang-btn.active,
-.feedback-btn.active {
+.feedback-btn.active,
+.quiz-dir-btn.active,
+.cat-btn.active,
+.mode-btn.active {
   background: #3b82f6;
   border-color: #3b82f6;
   color: white;
@@ -741,8 +753,9 @@ button {
 /* ─── Quiz: photo answer buttons (name → photo direction) ─── */
 .answer-photo-btn {
   padding: 4px;
+  aspect-ratio: 1;
+  height: auto;
   min-height: 0;
-  height: clamp(90px, 26vw, 130px);
   overflow: hidden;
 }
 
