@@ -1,3 +1,5 @@
+const VERSION = "1.0";
+
 const UNFLIP_DELAY_MS = 1000;
 const WIN_MODAL_DELAY_MS = 300;
 const QUIZ_ADVANCE_DELAY_MS = 1200;
@@ -98,6 +100,54 @@ function shuffleArray(array) {
   return arr;
 }
 
+// ── Personal best ──────────────────────────────────────────────────────────
+
+function getPbKey() {
+  const diff = selectedMode === "family" ? "any" : selectedDifficulty;
+  return `pb_${selectedGameType}_${selectedMode}_${diff}_${selectedPairs}`;
+}
+
+function loadPb(key) {
+  try { return JSON.parse(localStorage.getItem(key)); } catch { return null; }
+}
+
+function savePb(key, data) {
+  try { localStorage.setItem(key, JSON.stringify(data)); } catch {}
+}
+
+function updatePbDisplay(t) {
+  const pbEl = document.getElementById("win-pb");
+  if (!pbEl) return;
+
+  const key  = getPbKey();
+  const prev = loadPb(key);
+  let isBetter, current, recordStr, prevStr;
+
+  if (selectedGameType === "memory") {
+    current  = { moves: gameState.moves, time: gameState.timer };
+    isBetter = !prev || current.moves < prev.moves
+                     || (current.moves === prev.moves && current.time < prev.time);
+    recordStr = t.pbMemoryRecord(current.moves, formatTime(current.time));
+    prevStr   = prev ? t.pbMemoryRecord(prev.moves, formatTime(prev.time)) : null;
+  } else {
+    const total = quizState.questions.length;
+    const pct   = Math.round((quizState.score / total) * 100);
+    current  = { pct, score: quizState.score, total, time: gameState.timer };
+    isBetter = !prev || pct > prev.pct || (pct === prev.pct && current.time < prev.time);
+    recordStr = t.pbQuizRecord(pct, current.score, total, formatTime(current.time));
+    prevStr   = prev ? t.pbQuizRecord(prev.pct, prev.score, prev.total, formatTime(prev.time)) : null;
+  }
+
+  if (isBetter) {
+    savePb(key, current);
+    pbEl.innerHTML = prevStr
+      ? `<div class="pb-new">${t.pbNew}</div><div class="pb-prev">${t.pbPrevious} ${prevStr}</div>`
+      : `<div class="pb-new">${t.pbNew}</div>`;
+  } else {
+    pbEl.innerHTML = `<div class="pb-existing">${t.pbBest} ${prevStr}</div>`;
+  }
+}
+
 // ── Modal ──────────────────────────────────────────────────────────────────
 
 function showWinModal() {
@@ -113,6 +163,7 @@ function showWinModal() {
     winTitle.textContent = t.winYouWon;
     winMessage.textContent = t.winMemoryMsg(gameState.moves, formatTime(gameState.timer));
   }
+  updatePbDisplay(t);
   winModal.classList.remove("hidden");
 }
 
@@ -152,6 +203,7 @@ let selectedPairs = DEFAULT_PAIRS.easy;
 let selectedMode = "flags";
 let selectedLanguage = "en";
 let selectedGameType = "memory";
+let selectedQuizDirection = "photo-to-name";
 
 const UI_TEXT = {
   en: {
@@ -196,6 +248,15 @@ const UI_TEXT = {
     winQuizDone:       "Quiz Done!",
     winMemoryMsg:      (moves, time) => `You finished in ${moves} moves and ${time}.`,
     winQuizMsg:        (score, total, pct, time) => `You scored ${score} / ${total} (${pct}%) in ${time}.`,
+    pbNew:             "⭐ Personal best!",
+    pbPrevious:        "Previous:",
+    pbBest:            "Your best:",
+    pbMemoryRecord:    (moves, time) => `${moves} moves · ${time}`,
+    pbQuizRecord:      (pct, score, total, time) => `${pct}% (${score}/${total}) · ${time}`,
+    winHome:           "🏠 Home",
+    labelQuizDirection: "Question Style",
+    btnPhotoToName:    "📷 → 🏷️ Name",
+    btnNameToPhoto:    "🏷️ → 📷 Photo",
   },
   he: {
     labelLanguage:     "שפה / Language",
@@ -239,6 +300,15 @@ const UI_TEXT = {
     winQuizDone:       "סיום חידון!",
     winMemoryMsg:      (moves, time) => `סיימת ב־${moves} מהלכים, בזמן ${time}`,
     winQuizMsg:        (score, total, pct, time) => `ניקדת ${score} מתוך ${total} (${pct}%) בזמן ${time}`,
+    pbNew:             "⭐ שיא אישי!",
+    pbPrevious:        "קודם:",
+    pbBest:            "השיא שלך:",
+    pbMemoryRecord:    (moves, time) => `${moves} מהלכים · ${time}`,
+    pbQuizRecord:      (pct, score, total, time) => `${pct}% (${score}/${total}) · ${time}`,
+    winHome:           "🏠 בית",
+    labelQuizDirection: "סגנון שאלה",
+    btnPhotoToName:    "📷 → 🏷️ שם",
+    btnNameToPhoto:    "🏷️ → 📷 תמונה",
   },
 };
 
@@ -288,15 +358,24 @@ function setGameType(type) {
   document.querySelectorAll(".pairs-label").forEach(el => {
     el.textContent = type === "quiz" ? t.labelQuestions : t.labelPairs;
   });
+  updateSettingsVisibility();
 }
 
-function updateSettingsVisibility(mode) {
-  const isFamily = mode === "family";
-  document.querySelectorAll("[data-setting='language']").forEach(el => {
-    el.classList.toggle("setting-hidden", isFamily);
-  });
+function updateSettingsVisibility() {
+  const isFamily      = selectedMode === "family";
+  const isFamilyQuiz  = isFamily && selectedGameType === "quiz";
   document.querySelectorAll("[data-setting='difficulty']").forEach(el => {
     el.classList.toggle("setting-hidden", isFamily);
+  });
+  document.querySelectorAll("[data-setting='quiz-direction']").forEach(el => {
+    el.classList.toggle("setting-hidden", !isFamilyQuiz);
+  });
+}
+
+function setQuizDirection(dir) {
+  selectedQuizDirection = dir;
+  document.querySelectorAll(".quiz-dir-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.dir === dir);
   });
 }
 
@@ -309,7 +388,7 @@ function setMode(mode) {
   const subtitle = document.getElementById("start-subtitle");
   if (subtitle) subtitle.textContent = UI_TEXT[selectedLanguage][subtitleKey] || "";
   if (mode === "maps") loadWorldData();
-  updateSettingsVisibility(mode);
+  updateSettingsVisibility();
   updatePairsDisplay();
 }
 
@@ -613,9 +692,11 @@ function renderQuizQuestion() {
 
   const promptEl = document.getElementById("quiz-prompt");
   if (selectedMode === "family") {
-    // Show the photo — player guesses the name
-    promptEl.innerHTML =
-      `<img class="quiz-family-photo" src="${q.correct.image}" alt="מי זה?">`;
+    if (selectedQuizDirection === "name-to-photo") {
+      promptEl.innerHTML = `<div class="quiz-text-prompt" dir="rtl">${q.correct.name}</div>`;
+    } else {
+      promptEl.innerHTML = `<img class="quiz-family-photo" src="${q.correct.image}" alt="?">`;
+    }
   } else if (selectedMode === "flags") {
     promptEl.innerHTML =
       `<img class="quiz-flag" src="https://flagcdn.com/w320/${q.correct.code}.png" alt="Flag">`;
@@ -636,16 +717,21 @@ function renderQuizQuestion() {
 
   q.answers.forEach(item => {
     const btn = document.createElement("button");
-    btn.className = "answer-btn";
-    if (selectedMode === "family") {
-      btn.textContent = item.name;
-      btn.setAttribute("dir", "rtl");
-    } else if (selectedMode === "capitals") {
-      btn.textContent = capitalName(item);
-      if (selectedLanguage === "he") btn.setAttribute("dir", "rtl");
+    if (selectedMode === "family" && selectedQuizDirection === "name-to-photo") {
+      btn.className = "answer-btn answer-photo-btn";
+      btn.innerHTML = `<img src="${item.image}" alt="${item.name}">`;
     } else {
-      btn.textContent = countryName(item);
-      if (selectedLanguage === "he") btn.setAttribute("dir", "rtl");
+      btn.className = "answer-btn";
+      if (selectedMode === "family") {
+        btn.textContent = item.name;
+        btn.setAttribute("dir", "rtl");
+      } else if (selectedMode === "capitals") {
+        btn.textContent = capitalName(item);
+        if (selectedLanguage === "he") btn.setAttribute("dir", "rtl");
+      } else {
+        btn.textContent = countryName(item);
+        if (selectedLanguage === "he") btn.setAttribute("dir", "rtl");
+      }
     }
     btn.dataset.code = item.code;
     btn.addEventListener("click", () => handleAnswer(btn, q));
@@ -768,9 +854,15 @@ winBackButton.addEventListener("click", function () {
   winResultsView.classList.remove("hidden");
 });
 
+document.getElementById("win-home-btn").addEventListener("click", showStartScreen);
+
 winStartButton.addEventListener("click", async function () {
   hideWinModal();
   await startGame();
+});
+
+document.querySelectorAll(".quiz-dir-btn").forEach(btn => {
+  btn.addEventListener("click", () => setQuizDirection(btn.dataset.dir));
 });
 
 // ── Feedback settings ──────────────────────────────────────────────────────
@@ -813,7 +905,9 @@ document.addEventListener("click", e => {
 
 loadWorldData();
 updatePairsDisplay();
+updateSettingsVisibility();
 applyLanguageToUI(selectedLanguage);
+document.querySelectorAll(".app-version").forEach(el => { el.textContent = `v${VERSION}`; });
 showStartScreen();
 
 if ("serviceWorker" in navigator) {

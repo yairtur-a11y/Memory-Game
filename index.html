@@ -71,6 +71,14 @@
           </div>
         </div>
 
+        <div class="setting-group setting-hidden" data-setting="quiz-direction">
+          <span class="setting-label" data-i18n="labelQuizDirection">Question Style</span>
+          <div class="toggle-buttons">
+            <button class="quiz-dir-btn active" data-dir="photo-to-name" data-i18n="btnPhotoToName">📷 → 🏷️ Name</button>
+            <button class="quiz-dir-btn"        data-dir="name-to-photo" data-i18n="btnNameToPhoto">🏷️ → 📷 Photo</button>
+          </div>
+        </div>
+
         <div class="setting-group">
           <span class="setting-label" data-i18n="labelFeedback">Feedback</span>
           <div class="toggle-buttons">
@@ -81,6 +89,7 @@
       </div>
 
       <button id="start-btn" class="primary-btn" data-i18n="btnStart">Start Game</button>
+      <p class="app-version"></p>
     </div>
   </div>
 
@@ -122,9 +131,11 @@
         <div class="win-icon" id="win-icon">🏆</div>
         <h2 id="win-title">You Won!</h2>
         <p id="win-message"></p>
+        <div id="win-pb" class="win-pb"></div>
         <div class="modal-buttons">
-          <button id="play-again-btn"      class="primary-btn"   data-i18n="btnPlayAgain">Play Again</button>
+          <button id="play-again-btn"        class="primary-btn"   data-i18n="btnPlayAgain">Play Again</button>
           <button id="change-difficulty-btn" class="secondary-btn" data-i18n="btnChangeSettings">Change Settings</button>
+          <button id="win-home-btn"          class="modal-home-btn" data-i18n="winHome">🏠 Home</button>
         </div>
       </div>
 
@@ -170,6 +181,14 @@
               <button class="pairs-up-btn stepper-btn">+</button>
             </div>
           </div>
+          <div class="setting-group setting-hidden" data-setting="quiz-direction">
+            <span class="setting-label" data-i18n="labelQuizDirection">Question Style</span>
+            <div class="toggle-buttons">
+              <button class="quiz-dir-btn active" data-dir="photo-to-name" data-i18n="btnPhotoToName">📷 → 🏷️ Name</button>
+              <button class="quiz-dir-btn"        data-dir="name-to-photo" data-i18n="btnNameToPhoto">🏷️ → 📷 Photo</button>
+            </div>
+          </div>
+
           <div class="setting-group">
             <span class="setting-label" data-i18n="labelFeedback">Feedback</span>
             <div class="toggle-buttons">

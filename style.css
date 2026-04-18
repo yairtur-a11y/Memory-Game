@@ -139,11 +139,9 @@ body {
   color: white;
 }
 
-/* Haptics button on iOS — visually indicates it's unavailable */
+/* Haptics button hidden when vibration is unavailable (e.g. iOS) */
 .feedback-btn:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-  text-decoration: line-through;
+  display: none;
 }
 
 /* ─── Pairs stepper ─── */
@@ -475,6 +473,15 @@ button {
   border-radius: 6px;
 }
 
+/* ─── App version ─── */
+.app-version {
+  margin: -10px 0 0;
+  font-size: 11px;
+  color: #cbd5e1;
+  letter-spacing: 0.04em;
+  align-self: center;
+}
+
 /* ─── Win modal ─── */
 .win-modal {
   position: fixed;
@@ -516,7 +523,57 @@ button {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-top: 22px;
+  margin-top: 16px;
+}
+
+/* ─── Personal best ─── */
+.win-pb {
+  margin: 10px 0 0;
+  min-height: 0;
+  text-align: center;
+}
+
+.pb-new {
+  display: inline-block;
+  background: linear-gradient(135deg, #fef9c3, #fef3c7);
+  color: #92400e;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1px solid #fcd34d;
+}
+
+.pb-prev {
+  display: block;
+  margin-top: 5px;
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.pb-existing {
+  font-size: 12px;
+  color: #94a3b8;
+  padding: 4px 0;
+}
+
+/* ─── Home button in win modal ─── */
+.modal-home-btn {
+  width: 100%;
+  padding: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  background: transparent;
+  color: #94a3b8;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.modal-home-btn:hover {
+  background: #f8fafc;
+  color: #64748b;
 }
 
 #win-settings .settings-section {
@@ -679,6 +736,23 @@ button {
 
 .answer-btn:disabled {
   cursor: default;
+}
+
+/* ─── Quiz: photo answer buttons (name → photo direction) ─── */
+.answer-photo-btn {
+  padding: 4px;
+  min-height: 0;
+  height: clamp(90px, 26vw, 130px);
+  overflow: hidden;
+}
+
+.answer-photo-btn img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+  display: block;
+  pointer-events: none;
 }
 
 /* ─── Family: photo card ─── */
