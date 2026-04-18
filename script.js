@@ -157,6 +157,7 @@ const SUBTITLES = {
   flags:    "Match every country to its flag",
   capitals: "Match every country to its capital city",
   maps:     "Match every country to its location on the map",
+  family:   "Match every name to their photo",
 };
 
 function setLanguage(lang) {
@@ -196,6 +197,7 @@ function setMode(mode) {
 }
 
 function getPoolForDifficulty(difficulty) {
+  if (selectedMode === "family") return [...familyMembers];
   let pool;
   if (difficulty === "easy")        pool = allCountries.filter(c => c.difficulty === "easy");
   else if (difficulty === "medium") pool = allCountries.filter(c => ["easy", "medium"].includes(c.difficulty));
@@ -313,6 +315,14 @@ function buildCardDeck() {
 
   const cards = [];
 
+  if (selectedMode === "family") {
+    for (const member of pool) {
+      cards.push({ type: "family-name",  display: member.name, pairId: member.code });
+      cards.push({ type: "family-photo", display: member.name, pairId: member.code, image: member.image });
+    }
+    return { cards: shuffleArray(cards), columns: settings.columns };
+  }
+
   for (let i = 0; i < pool.length; i++) {
     cards.push({
       type: "country",
@@ -352,6 +362,18 @@ function createCardBackHTML(cardData) {
     return svg
       ? `<div class="card-back map-card">${svg}</div>`
       : `<div class="card-back map-card map-loading">🗺️</div>`;
+  }
+  if (cardData.type === "family-photo") {
+    return `
+      <div class="card-back photo-card">
+        <img class="family-photo-img" src="${cardData.image}" alt="${cardData.display}">
+      </div>`;
+  }
+  if (cardData.type === "family-name") {
+    return `
+      <div class="card-back family-name-card">
+        <span class="family-name-text" dir="rtl">${cardData.display}</span>
+      </div>`;
   }
   return `
     <div class="card-back text-card">
@@ -445,10 +467,10 @@ function buildQuizQuestions() {
   const pool = getPoolForDifficulty(selectedDifficulty);
   const selected = shuffleArray([...pool]).slice(0, selectedPairs);
 
-  return selected.map(country => {
-    const wrong = shuffleArray(pool.filter(c => c.code !== country.code)).slice(0, 3);
-    const answers = shuffleArray([country, ...wrong]);
-    return { correct: country, answers };
+  return selected.map(item => {
+    const wrong = shuffleArray(pool.filter(c => c.code !== item.code)).slice(0, 3);
+    const answers = shuffleArray([item, ...wrong]);
+    return { correct: item, answers };
   });
 }
 
@@ -460,7 +482,11 @@ function renderQuizQuestion() {
   quizScoreDisplay.textContent = `${quizState.score} / ${quizState.currentIndex}`;
 
   const promptEl = document.getElementById("quiz-prompt");
-  if (selectedMode === "flags") {
+  if (selectedMode === "family") {
+    // Show the photo — player guesses the name
+    promptEl.innerHTML =
+      `<img class="quiz-family-photo" src="${q.correct.image}" alt="מי זה?">`;
+  } else if (selectedMode === "flags") {
     promptEl.innerHTML =
       `<img class="quiz-flag" src="https://flagcdn.com/w320/${q.correct.code}.png" alt="Flag">`;
   } else if (selectedMode === "maps") {
@@ -478,12 +504,20 @@ function renderQuizQuestion() {
   answersEl.innerHTML = "";
   quizState.answered = false;
 
-  q.answers.forEach(country => {
+  q.answers.forEach(item => {
     const btn = document.createElement("button");
     btn.className = "answer-btn";
-    btn.textContent = selectedMode === "capitals" ? capitalName(country) : countryName(country);
-    if (selectedLanguage === "he") btn.setAttribute("dir", "rtl");
-    btn.dataset.code = country.code;
+    if (selectedMode === "family") {
+      btn.textContent = item.name;
+      btn.setAttribute("dir", "rtl");
+    } else if (selectedMode === "capitals") {
+      btn.textContent = capitalName(item);
+      if (selectedLanguage === "he") btn.setAttribute("dir", "rtl");
+    } else {
+      btn.textContent = countryName(item);
+      if (selectedLanguage === "he") btn.setAttribute("dir", "rtl");
+    }
+    btn.dataset.code = item.code;
     btn.addEventListener("click", () => handleAnswer(btn, q));
     answersEl.appendChild(btn);
   });
@@ -606,6 +640,21 @@ showStartScreen();
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js");
+    navigator.serviceWorker.register("./sw.js").catch(err => {
+      console.warn("SW registration failed:", err);
+    });
+
+    // When a new SW takes control (skipWaiting activated a new version),
+    // show the update banner. This does NOT fire on first install.
+    let reloading = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (reloading) return;
+      reloading = true;
+
+      const banner = document.getElementById("update-banner");
+      const btn = document.getElementById("update-refresh-btn");
+      if (banner) banner.classList.remove("hidden");
+      if (btn) btn.addEventListener("click", () => location.reload());
+    });
   });
 }

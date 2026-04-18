@@ -49,6 +49,7 @@
             <button class="toggle-btn active" data-mode="flags">🏳️ Flags</button>
             <button class="toggle-btn" data-mode="capitals">🏙️ Capitals</button>
             <button class="toggle-btn" data-mode="maps">🗺️ Maps</button>
+            <button class="toggle-btn" data-mode="family">👨‍👩‍👧‍👦 Family</button>
           </div>
         </div>
 
@@ -140,6 +141,7 @@
               <button class="toggle-btn active" data-mode="flags">🏳️ Flags</button>
               <button class="toggle-btn" data-mode="capitals">🏙️ Capitals</button>
               <button class="toggle-btn" data-mode="maps">🗺️ Maps</button>
+              <button class="toggle-btn" data-mode="family">👨‍👩‍👧‍👦 Family</button>
             </div>
           </div>
           <div class="setting-group">
@@ -168,10 +170,17 @@
     </div>
   </div>
 
+  <!-- Update notification banner -->
+  <div id="update-banner" class="update-banner hidden">
+    <span>🔄 New version available</span>
+    <button id="update-refresh-btn">Refresh</button>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
   <script src="countries.js"></script>
   <script src="maps.js"></script>
+  <script src="family.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
