@@ -91,14 +91,24 @@ body {
 /* ─── Toggle buttons (mode + difficulty) ─── */
 .toggle-buttons {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
+}
+
+.toggle-btn {
+  flex: 1 1 calc(50% - 4px);
+  padding: 9px 0;
+}
+
+.diff-btn,
+.lang-btn {
+  flex: 1;
+  padding: 9px 0;
 }
 
 .toggle-btn,
 .diff-btn,
 .lang-btn {
-  flex: 1;
-  padding: 9px 0;
   font-size: 13px;
   font-weight: 600;
   border: 2px solid #e2e8f0;
@@ -752,6 +762,28 @@ button {
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
+}
+
+/* ─── Quiz feedback indicator ─── */
+.quiz-feedback {
+  font-size: 52px;
+  font-weight: 900;
+  text-align: center;
+  line-height: 1;
+  animation: feedback-pop 0.25s ease;
+}
+
+.quiz-feedback.feedback-correct { color: #22c55e; }
+.quiz-feedback.feedback-wrong   { color: #ef4444; }
+
+@keyframes feedback-pop {
+  from { transform: scale(0.4); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+/* ─── Family: hidden settings ─── */
+.setting-hidden {
+  display: none !important;
 }
 
 /* ─── Utility ─── */

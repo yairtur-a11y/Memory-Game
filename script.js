@@ -186,6 +186,16 @@ function setGameType(type) {
   });
 }
 
+function updateSettingsVisibility(mode) {
+  const isFamily = mode === "family";
+  document.querySelectorAll("[data-setting='language']").forEach(el => {
+    el.classList.toggle("setting-hidden", isFamily);
+  });
+  document.querySelectorAll("[data-setting='difficulty']").forEach(el => {
+    el.classList.toggle("setting-hidden", isFamily);
+  });
+}
+
 function setMode(mode) {
   selectedMode = mode;
   document.querySelectorAll(".toggle-btn").forEach(btn => {
@@ -194,6 +204,7 @@ function setMode(mode) {
   const subtitle = document.getElementById("start-subtitle");
   if (subtitle) subtitle.textContent = SUBTITLES[mode];
   if (mode === "maps") loadWorldData();
+  updateSettingsVisibility(mode);
   updatePairsDisplay();
 }
 
@@ -481,6 +492,9 @@ function renderQuizQuestion() {
   const q = quizState.questions[quizState.currentIndex];
   const total = quizState.questions.length;
 
+  const feedbackEl = document.getElementById("quiz-feedback");
+  if (feedbackEl) feedbackEl.className = "quiz-feedback hidden";
+
   quizProgressDisplay.textContent = `${quizState.currentIndex + 1} / ${total}`;
   quizScoreDisplay.textContent = `${quizState.score} / ${quizState.currentIndex}`;
 
@@ -532,6 +546,12 @@ function handleAnswer(btn, question) {
 
   const isCorrect = btn.dataset.code === question.correct.code;
   if (isCorrect) quizState.score++;
+
+  const feedbackEl = document.getElementById("quiz-feedback");
+  if (feedbackEl) {
+    feedbackEl.textContent = isCorrect ? "✓" : "✗";
+    feedbackEl.className = `quiz-feedback ${isCorrect ? "feedback-correct" : "feedback-wrong"}`;
+  }
 
   document.querySelectorAll(".answer-btn").forEach(b => {
     b.disabled = true;
