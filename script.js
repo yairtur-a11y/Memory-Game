@@ -17,6 +17,12 @@ const startButton = document.getElementById("start-btn");
 const startScreen = document.getElementById("start-screen");
 const gameScreen = document.getElementById("game-screen");
 const quizScreen = document.getElementById("quiz-screen");
+const typeScreen = document.getElementById("type-screen");
+const typeTimerDisplay = document.getElementById("type-timer");
+const typeProgressDisplay = document.getElementById("type-progress");
+const typeScoreDisplay = document.getElementById("type-score-display");
+const typeRestartButton = document.getElementById("type-restart-btn");
+const typeHomeButton = document.getElementById("type-home-btn");
 
 const winModal = document.getElementById("win-modal");
 const winIcon = document.getElementById("win-icon");
@@ -49,6 +55,13 @@ const gameState = {
 };
 
 const quizState = {
+  questions: [],
+  currentIndex: 0,
+  score: 0,
+  answered: false,
+};
+
+const typeState = {
   questions: [],
   currentIndex: 0,
   score: 0,
@@ -131,9 +144,10 @@ function updatePbDisplay(t) {
     recordStr = t.pbMemoryRecord(current.moves, formatTime(current.time));
     prevStr   = prev ? t.pbMemoryRecord(prev.moves, formatTime(prev.time)) : null;
   } else {
-    const total = quizState.questions.length;
-    const pct   = Math.round((quizState.score / total) * 100);
-    current  = { pct, score: quizState.score, total, time: gameState.timer };
+    const qs    = selectedGameType === "type" ? typeState : quizState;
+    const total = qs.questions.length;
+    const pct   = Math.round((qs.score / total) * 100);
+    current  = { pct, score: qs.score, total, time: gameState.timer };
     isBetter = !prev || pct > prev.pct || (pct === prev.pct && current.time < prev.time);
     recordStr = t.pbQuizRecord(pct, current.score, total, formatTime(current.time));
     prevStr   = prev ? t.pbQuizRecord(prev.pct, prev.score, prev.total, formatTime(prev.time)) : null;
@@ -169,9 +183,10 @@ function getCurrentResult() {
   if (selectedGameType === "memory") {
     return { moves: gameState.moves, time: gameState.timer };
   }
-  const total = quizState.questions.length;
-  const pct = Math.round((quizState.score / total) * 100);
-  return { pct, score: quizState.score, total, time: gameState.timer };
+  const qs = selectedGameType === "type" ? typeState : quizState;
+  const total = qs.questions.length;
+  const pct = Math.round((qs.score / total) * 100);
+  return { pct, score: qs.score, total, time: gameState.timer };
 }
 
 function isBetterThanEntry(current, entry) {
@@ -232,12 +247,13 @@ function renderLeaderboard(highlightIdx) {
 
 function showWinModal() {
   const t = UI_TEXT[selectedLanguage];
-  if (selectedGameType === "quiz") {
-    const total = quizState.questions.length;
-    const pct = Math.round((quizState.score / total) * 100);
+  if (selectedGameType === "quiz" || selectedGameType === "type") {
+    const qs = selectedGameType === "type" ? typeState : quizState;
+    const total = qs.questions.length;
+    const pct = Math.round((qs.score / total) * 100);
     winIcon.textContent = pct === 100 ? "🏆" : pct >= 60 ? "⭐" : "📚";
     winTitle.textContent = pct === 100 ? t.winPerfect : t.winQuizDone;
-    winMessage.textContent = t.winQuizMsg(quizState.score, total, pct, formatTime(gameState.timer));
+    winMessage.textContent = t.winQuizMsg(qs.score, total, pct, formatTime(gameState.timer));
   } else {
     winIcon.textContent = "🏆";
     winTitle.textContent = t.winYouWon;
@@ -278,7 +294,15 @@ function showStartScreen() {
   hideWinModal();
   gameScreen.classList.add("hidden");
   quizScreen.classList.add("hidden");
+  typeScreen.classList.add("hidden");
   startScreen.classList.remove("hidden");
+}
+
+function showTypeScreen() {
+  startScreen.classList.add("hidden");
+  gameScreen.classList.add("hidden");
+  quizScreen.classList.add("hidden");
+  typeScreen.classList.remove("hidden");
 }
 
 function showGameScreen() {
@@ -296,7 +320,7 @@ function showQuizScreen() {
 // ── Settings ───────────────────────────────────────────────────────────────
 
 const MAX_PAIRS = 20;
-const DEFAULT_PAIRS = { easy: 4, medium: 6, hard: 8 };
+const DEFAULT_PAIRS = { easy: 4, hard: 6, mix: 8 };
 
 let selectedDifficulty = "easy";
 let selectedPairs = DEFAULT_PAIRS.easy;
@@ -318,6 +342,7 @@ const UI_TEXT = {
     labelFeedback:     "Feedback",
     btnMemory:         "🎴 Memory",
     btnQuiz:           "❓ Quiz",
+    btnType:           "✍️ Type",
     btnWorld:          "🌍 World",
     btnAmerica:        "🇺🇸 America",
     btnFamily:         "👨‍👩‍👧‍👦 Family",
@@ -325,8 +350,8 @@ const UI_TEXT = {
     btnCapitals:       "🏙️ Capitals",
     btnMaps:           "🗺️ Maps",
     btnEasy:           "Easy",
-    btnMedium:         "Medium",
     btnHard:           "Hard",
+    btnMix:            "Mix",
     btnSound:          "🔊 Sound",
     btnHaptics:        "📳 Haptics",
     btnStart:          "Start Game",
@@ -364,6 +389,10 @@ const UI_TEXT = {
     labelQuizDirection:  "Question Style",
     btnPhotoToName:      "📷 → 🏷️ Name",
     btnNameToPhoto:      "🏷️ → 📷 Photo",
+    typePlaceholder:     "Type your answer…",
+    typeSubmit:          "Submit ↵",
+    typeNext:            "Next →",
+    typeAnswerWas:       "The answer was:",
     lbTitle:             "Top 5",
     lbQualify:           "🏅 You made the top 5! Enter your name:",
     lbSave:              "Save",
@@ -381,6 +410,7 @@ const UI_TEXT = {
     labelFeedback:     "משוב",
     btnMemory:         "🎴 זיכרון",
     btnQuiz:           "❓ חידון",
+    btnType:           "✍️ כתוב",
     btnWorld:          "🌍 עולם",
     btnAmerica:        "🇺🇸 אמריקה",
     btnFamily:         "👨‍👩‍👧‍👦 משפחה",
@@ -388,8 +418,8 @@ const UI_TEXT = {
     btnCapitals:       "🏙️ בירות",
     btnMaps:           "🗺️ מפות",
     btnEasy:           "קל",
-    btnMedium:         "בינוני",
     btnHard:           "קשה",
+    btnMix:            "מיקס",
     btnSound:          "🔊 צליל",
     btnHaptics:        "📳 רטט",
     btnStart:          "התחל משחק",
@@ -427,6 +457,10 @@ const UI_TEXT = {
     labelQuizDirection:  "סגנון שאלה",
     btnPhotoToName:      "📷 → 🏷️ שם",
     btnNameToPhoto:      "🏷️ → 📷 תמונה",
+    typePlaceholder:     "כתוב את תשובתך…",
+    typeSubmit:          "שלח ↵",
+    typeNext:            "הבא →",
+    typeAnswerWas:       "התשובה הנכונה:",
     lbTitle:             "טופ 5",
     lbQualify:           "🏅 נכנסת לטופ 5! הכנס את שמך:",
     lbSave:              "שמור",
@@ -460,7 +494,7 @@ function applyLanguageToUI(lang) {
   });
   updateSubtitle();
   document.querySelectorAll(".pairs-label").forEach(el => {
-    el.textContent = selectedGameType === "quiz" ? t.labelQuestions : t.labelPairs;
+    el.textContent = (selectedGameType === "quiz" || selectedGameType === "type") ? t.labelQuestions : t.labelPairs;
   });
 }
 
@@ -505,7 +539,7 @@ function setGameType(type) {
   });
   const t = UI_TEXT[selectedLanguage];
   document.querySelectorAll(".pairs-label").forEach(el => {
-    el.textContent = type === "quiz" ? t.labelQuestions : t.labelPairs;
+    el.textContent = (type === "quiz" || type === "type") ? t.labelQuestions : t.labelPairs;
   });
   updateSettingsVisibility();
 }
@@ -546,15 +580,15 @@ function setMode(mode) {
 function getPoolForDifficulty(difficulty) {
   if (selectedCategory === "family") return [...familyMembers];
   if (selectedCategory === "america") {
-    if (difficulty === "easy")        return usStates.filter(s => s.difficulty === "easy");
-    if (difficulty === "medium")      return usStates.filter(s => ["easy", "medium"].includes(s.difficulty));
-    return [...usStates];
+    if (difficulty === "easy") return usStates.filter(s => s.difficulty === "easy");
+    if (difficulty === "hard") return usStates.filter(s => s.difficulty === "hard");
+    return shuffleArray([...usStates]); // mix
   }
   // world
   let pool;
-  if (difficulty === "easy")        pool = allCountries.filter(c => c.difficulty === "easy");
-  else if (difficulty === "medium") pool = allCountries.filter(c => ["easy", "medium"].includes(c.difficulty));
-  else                              pool = [...allCountries];
+  if (difficulty === "easy")      pool = allCountries.filter(c => c.difficulty === "easy");
+  else if (difficulty === "hard") pool = allCountries.filter(c => c.difficulty === "hard");
+  else                            pool = shuffleArray([...allCountries]); // mix
   if (selectedMode === "maps") pool = pool.filter(c => c.code in COUNTRY_MAP_CONFIG);
   return pool;
 }
@@ -615,20 +649,35 @@ function renderCountryMapSVG(code) {
   if (mapSvgCache[code]) return mapSvgCache[code];
   if (!worldData) return null;
 
-  const config = COUNTRY_MAP_CONFIG[code];
   const numericId = ISO_TO_NUMERIC[code];
-  if (!config || !numericId) return null;
+  if (!numericId) return null;
 
   try {
     const W = 960, H = 500;
-    const projection = d3.geoMercator()
-      .center(config.center)
-      .scale(config.scale)
-      .translate([W / 2, H / 2]);
-    const path = d3.geoPath(projection);
 
     const countries = topojson.feature(worldData, worldData.objects.countries);
-    const borders   = topojson.mesh(worldData, worldData.objects.countries, (a, b) => a !== b);
+    const targetFeature = countries.features.find(f => String(f.id) === String(numericId));
+    if (!targetFeature) return null;
+
+    // Auto-fit the projection to the target country with 20% padding on each side
+    const projection = d3.geoMercator();
+    const padX = W * 0.20, padY = H * 0.20;
+    projection.fitExtent([[padX, padY], [W - padX, H - padY]], targetFeature);
+
+    // Cap scale so tiny countries (Monaco, Singapore…) show surrounding context
+    // rather than zooming into a microscopic dot
+    const MAX_SCALE = 6000;
+    if (projection.scale() > MAX_SCALE) {
+      const centroid = d3.geoCentroid(targetFeature);
+      projection.scale(MAX_SCALE);
+      // Re-center: shift translate so the geographic centroid lands at canvas centre
+      const [px, py] = projection(centroid);
+      const [tx, ty] = projection.translate();
+      projection.translate([tx + W / 2 - px, ty + H / 2 - py]);
+    }
+
+    const path = d3.geoPath(projection);
+    const borders = topojson.mesh(worldData, worldData.objects.countries, (a, b) => a !== b);
 
     const parts = [
       `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}">`,
@@ -901,6 +950,157 @@ function buildQuizQuestions() {
   });
 }
 
+// ── Shared prompt rendering ────────────────────────────────────────────────
+
+function renderPromptInEl(el, item, isTypeMode) {
+  if (selectedCategory === "family") {
+    // type mode always shows photo; quiz direction only applies to quiz
+    if (!isTypeMode && selectedQuizDirection === "name-to-photo") {
+      el.innerHTML = `<div class="quiz-text-prompt" dir="rtl">${item.name}</div>`;
+    } else {
+      el.innerHTML = `<img class="quiz-family-photo" src="${item.image}" alt="?">`;
+    }
+  } else if (selectedMode === "flags") {
+    el.innerHTML =
+      `<img class="quiz-flag" src="https://flagcdn.com/w320/${item.code}.png" alt="Flag">`;
+  } else if (selectedMode === "maps") {
+    const svg = selectedCategory === "america"
+      ? renderStateMapSVG(item.fips)
+      : renderCountryMapSVG(item.code);
+    el.innerHTML = svg
+      ? `<div class="quiz-map">${svg}</div>`
+      : `<div class="quiz-map-loading">🗺️</div>`;
+  } else {
+    // capitals: show country/state name; answer is the capital
+    const name = selectedCategory === "america" ? stateName(item) : countryName(item);
+    const dir = selectedLanguage === "he" ? ' dir="rtl"' : "";
+    el.innerHTML = `<div class="quiz-text-prompt"${dir}>${name}</div>`;
+  }
+}
+
+// ── Type It game ───────────────────────────────────────────────────────────
+
+function buildTypeQuestions() {
+  const pool = getPoolForDifficulty(selectedDifficulty);
+  const selected = shuffleArray([...pool]).slice(0, selectedPairs);
+  return selected.map(item => ({ correct: item }));
+}
+
+function getValidAnswers(item) {
+  if (selectedCategory === "family") return [item.name];
+  if (selectedMode === "capitals") {
+    return [item.capital, item.capitalHe].filter(Boolean);
+  }
+  if (selectedCategory === "america") return [item.name, item.nameHe].filter(Boolean);
+  return [item.country, item.nameHe].filter(Boolean);
+}
+
+function getPrimaryAnswer(item) {
+  if (selectedCategory === "family") return item.name;
+  if (selectedMode === "capitals") {
+    return selectedLanguage === "he" ? item.capitalHe : item.capital;
+  }
+  if (selectedCategory === "america") return selectedLanguage === "he" ? item.nameHe : item.name;
+  return selectedLanguage === "he" ? item.nameHe : item.country;
+}
+
+function normalizeAnswer(str) {
+  return str.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
+function checkTypeAnswer(input, item) {
+  const norm = normalizeAnswer(input);
+  return getValidAnswers(item).some(a => normalizeAnswer(a) === norm);
+}
+
+function renderTypeQuestion() {
+  const q = typeState.questions[typeState.currentIndex];
+  const t = UI_TEXT[selectedLanguage];
+
+  document.getElementById("type-feedback").className = "quiz-feedback hidden";
+  document.getElementById("type-reveal").classList.add("hidden");
+
+  typeProgressDisplay.textContent = `${typeState.currentIndex + 1} / ${typeState.questions.length}`;
+  typeScoreDisplay.textContent = `${typeState.score} / ${typeState.currentIndex}`;
+
+  renderPromptInEl(document.getElementById("type-prompt"), q.correct, true);
+
+  const input = document.getElementById("type-input");
+  const submitBtn = document.getElementById("type-submit-btn");
+  input.value = "";
+  input.disabled = false;
+  input.className = "type-input";
+  input.dir = selectedLanguage === "he" ? "rtl" : "ltr";
+  input.placeholder = t.typePlaceholder;
+  submitBtn.textContent = t.typeSubmit;
+  submitBtn.className = "type-submit-btn";
+
+  typeState.answered = false;
+  setTimeout(() => input.focus(), 60);
+}
+
+function advanceTypeQuestion() {
+  typeState.currentIndex++;
+  if (typeState.currentIndex >= typeState.questions.length) {
+    stopTimer();
+    Feedback.win();
+    setTimeout(showWinModal, WIN_MODAL_DELAY_MS);
+  } else {
+    renderTypeQuestion();
+  }
+}
+
+function handleTypeSubmit() {
+  if (typeState.answered) { advanceTypeQuestion(); return; }
+
+  const input = document.getElementById("type-input");
+  const userInput = input.value.trim();
+  if (!userInput) return;
+
+  typeState.answered = true;
+  const q = typeState.questions[typeState.currentIndex];
+  const isCorrect = checkTypeAnswer(userInput, q.correct);
+  if (isCorrect) typeState.score++;
+
+  if (isCorrect) Feedback.correct(); else Feedback.wrong();
+
+  const feedbackEl = document.getElementById("type-feedback");
+  feedbackEl.textContent = isCorrect ? "✓" : "✗";
+  feedbackEl.className = `quiz-feedback ${isCorrect ? "feedback-correct" : "feedback-wrong"}`;
+
+  input.disabled = true;
+  input.className = `type-input ${isCorrect ? "input-correct" : "input-wrong"}`;
+
+  typeScoreDisplay.textContent = `${typeState.score} / ${typeState.currentIndex + 1}`;
+
+  const submitBtn = document.getElementById("type-submit-btn");
+  const t = UI_TEXT[selectedLanguage];
+
+  if (isCorrect) {
+    submitBtn.textContent = t.typeNext;
+    submitBtn.className = "type-submit-btn btn-next";
+    setTimeout(advanceTypeQuestion, 900);
+  } else {
+    const revealEl = document.getElementById("type-reveal");
+    revealEl.innerHTML = `${t.typeAnswerWas}<strong>${getPrimaryAnswer(q.correct)}</strong>`;
+    revealEl.classList.remove("hidden");
+    submitBtn.textContent = t.typeNext;
+    submitBtn.className = "type-submit-btn btn-next";
+  }
+}
+
+function startType() {
+  hideWinModal();
+  typeState.questions = buildTypeQuestions();
+  typeState.currentIndex = 0;
+  typeState.score = 0;
+  typeState.answered = false;
+  typeScoreDisplay.textContent = "0 / 0";
+  showTypeScreen();
+  startTimer(typeTimerDisplay);
+  renderTypeQuestion();
+}
+
 function renderQuizQuestion() {
   const q = quizState.questions[quizState.currentIndex];
   const total = quizState.questions.length;
@@ -911,29 +1111,7 @@ function renderQuizQuestion() {
   quizProgressDisplay.textContent = `${quizState.currentIndex + 1} / ${total}`;
   quizScoreDisplay.textContent = `${quizState.score} / ${quizState.currentIndex}`;
 
-  const promptEl = document.getElementById("quiz-prompt");
-  if (selectedCategory === "family") {
-    if (selectedQuizDirection === "name-to-photo") {
-      promptEl.innerHTML = `<div class="quiz-text-prompt" dir="rtl">${q.correct.name}</div>`;
-    } else {
-      promptEl.innerHTML = `<img class="quiz-family-photo" src="${q.correct.image}" alt="?">`;
-    }
-  } else if (selectedMode === "flags") {
-    promptEl.innerHTML =
-      `<img class="quiz-flag" src="https://flagcdn.com/w320/${q.correct.code}.png" alt="Flag">`;
-  } else if (selectedMode === "maps") {
-    const svg = selectedCategory === "america"
-      ? renderStateMapSVG(q.correct.fips)
-      : renderCountryMapSVG(q.correct.code);
-    promptEl.innerHTML = svg
-      ? `<div class="quiz-map">${svg}</div>`
-      : `<div class="quiz-map-loading">🗺️</div>`;
-  } else {
-    // capitals mode: show name, answer is capital
-    const name = selectedCategory === "america" ? stateName(q.correct) : countryName(q.correct);
-    const dir = selectedLanguage === "he" ? ' dir="rtl"' : "";
-    promptEl.innerHTML = `<div class="quiz-text-prompt"${dir}>${name}</div>`;
-  }
+  renderPromptInEl(document.getElementById("quiz-prompt"), q.correct, false);
 
   const answersEl = document.getElementById("quiz-answers");
   answersEl.innerHTML = "";
@@ -1024,6 +1202,8 @@ async function startGame() {
   }
   if (selectedGameType === "quiz") {
     startQuiz();
+  } else if (selectedGameType === "type") {
+    startType();
   } else {
     showGameScreen();
     createBoard();
@@ -1071,6 +1251,7 @@ quizRestartButton.addEventListener("click", startQuiz);
 playAgainButton.addEventListener("click", function () {
   hideWinModal();
   if (selectedGameType === "quiz") startQuiz();
+  else if (selectedGameType === "type") startType();
   else createBoard();
 });
 
@@ -1093,6 +1274,15 @@ winStartButton.addEventListener("click", async function () {
 
 document.querySelectorAll(".quiz-dir-btn").forEach(btn => {
   btn.addEventListener("click", () => setQuizDirection(btn.dataset.dir));
+});
+
+typeHomeButton.addEventListener("click", showStartScreen);
+typeRestartButton.addEventListener("click", startType);
+
+document.getElementById("type-submit-btn").addEventListener("click", handleTypeSubmit);
+
+document.getElementById("type-input").addEventListener("keydown", e => {
+  if (e.key === "Enter") handleTypeSubmit();
 });
 
 // ── Leaderboard save / skip ────────────────────────────────────────────────

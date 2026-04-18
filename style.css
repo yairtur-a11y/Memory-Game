@@ -907,6 +907,96 @@ button {
   display: none !important;
 }
 
+/* ─── Type It screen ─── */
+#type-screen {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: max(20px, env(safe-area-inset-top));
+  padding-bottom: max(40px, env(safe-area-inset-bottom));
+}
+
+.type-input-area {
+  width: 100%;
+  display: flex;
+  gap: 8px;
+}
+
+.type-input {
+  flex: 1;
+  padding: 14px 16px;
+  font-size: 18px;
+  font-family: inherit;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  outline: none;
+  transition: border-color 0.15s, background 0.15s;
+  min-width: 0;
+}
+
+.type-input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.type-input:focus {
+  border-color: rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.type-input.input-correct {
+  border-color: #4ade80;
+  background: rgba(74, 222, 128, 0.15);
+  color: #86efac;
+}
+
+.type-input.input-wrong {
+  border-color: #f87171;
+  background: rgba(248, 113, 113, 0.12);
+  color: #fca5a5;
+}
+
+.type-submit-btn {
+  padding: 14px 20px;
+  font-size: 15px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.12);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.type-submit-btn:hover {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.type-submit-btn.btn-next {
+  background: rgba(59, 130, 246, 0.35);
+  border-color: rgba(59, 130, 246, 0.65);
+}
+
+.type-reveal {
+  width: 100%;
+  text-align: center;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  padding: 4px 0;
+}
+
+.type-reveal strong {
+  color: white;
+  font-size: 16px;
+  display: block;
+  margin-top: 2px;
+}
+
 /* ─── Leaderboard ─── */
 .win-modal-content {
   max-height: 90dvh;

@@ -39,7 +39,8 @@
           <span class="setting-label" data-i18n="labelGameType">Game Type</span>
           <div class="toggle-buttons">
             <button class="game-type-btn active" data-type="memory" data-i18n="btnMemory">🎴 Memory</button>
-            <button class="game-type-btn" data-type="quiz" data-i18n="btnQuiz">❓ Quiz</button>
+            <button class="game-type-btn" data-type="quiz"   data-i18n="btnQuiz">❓ Quiz</button>
+            <button class="game-type-btn" data-type="type"   data-i18n="btnType">✍️ Type</button>
           </div>
         </div>
 
@@ -65,7 +66,7 @@
           <span class="setting-label" data-i18n="labelDifficulty">Difficulty</span>
           <div class="toggle-buttons">
             <button class="diff-btn active" data-difficulty="easy"   data-i18n="btnEasy">Easy</button>
-            <button class="diff-btn"        data-difficulty="medium" data-i18n="btnMedium">Medium</button>
+            <button class="diff-btn"        data-difficulty="mix"    data-i18n="btnMix">Mix</button>
             <button class="diff-btn"        data-difficulty="hard"   data-i18n="btnHard">Hard</button>
           </div>
         </div>
@@ -129,6 +130,28 @@
       <div id="quiz-prompt" class="quiz-prompt"></div>
       <div id="quiz-feedback" class="quiz-feedback hidden"></div>
       <div id="quiz-answers" class="quiz-answers"></div>
+    </div>
+  </div>
+
+  <div id="type-screen" class="hidden">
+    <div class="game-header">
+      <button id="type-home-btn" class="ghost-btn" title="Back to home">🏠</button>
+      <div class="info-bar">
+        <span><span data-i18n="labelQuestion">Question</span>: <strong id="type-progress">1/1</strong></span>
+        <span><span data-i18n="labelScore">Score</span>: <strong id="type-score-display">0</strong></span>
+        <span><span data-i18n="labelTime">Time</span>: <strong id="type-timer">00:00</strong></span>
+      </div>
+      <button id="type-restart-btn" class="ghost-btn" data-i18n="btnRestart">Restart</button>
+    </div>
+    <div class="quiz-container">
+      <div id="type-prompt" class="quiz-prompt"></div>
+      <div id="type-feedback" class="quiz-feedback hidden"></div>
+      <div id="type-reveal" class="type-reveal hidden"></div>
+      <div class="type-input-area">
+        <input type="text" id="type-input" class="type-input"
+               autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+        <button id="type-submit-btn" class="type-submit-btn"></button>
+      </div>
     </div>
   </div>
 
@@ -200,7 +223,7 @@
             <span class="setting-label" data-i18n="labelDifficulty">Difficulty</span>
             <div class="toggle-buttons">
               <button class="diff-btn active" data-difficulty="easy"   data-i18n="btnEasy">Easy</button>
-              <button class="diff-btn"        data-difficulty="medium" data-i18n="btnMedium">Medium</button>
+              <button class="diff-btn"        data-difficulty="mix"    data-i18n="btnMix">Mix</button>
               <button class="diff-btn"        data-difficulty="hard"   data-i18n="btnHard">Hard</button>
             </div>
           </div>
