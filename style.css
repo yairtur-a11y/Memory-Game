@@ -101,14 +101,16 @@ body {
 }
 
 .diff-btn,
-.lang-btn {
+.lang-btn,
+.feedback-btn {
   flex: 1;
   padding: 9px 0;
 }
 
 .toggle-btn,
 .diff-btn,
-.lang-btn {
+.lang-btn,
+.feedback-btn {
   font-size: 13px;
   font-weight: 600;
   border: 2px solid #e2e8f0;
@@ -122,14 +124,16 @@ body {
 
 .toggle-btn:hover:not(.active),
 .diff-btn:hover:not(.active),
-.lang-btn:hover:not(.active) {
+.lang-btn:hover:not(.active),
+.feedback-btn:hover:not(.active) {
   border-color: #93c5fd;
   color: #3b82f6;
 }
 
 .toggle-btn.active,
 .diff-btn.active,
-.lang-btn.active {
+.lang-btn.active,
+.feedback-btn.active {
   background: #3b82f6;
   border-color: #3b82f6;
   color: white;
@@ -762,6 +766,29 @@ button {
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
+}
+
+/* ─── Visual feedback: match pop ─── */
+@keyframes card-match-pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+.card.matched {
+  animation: card-match-pop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ─── Visual feedback: mismatch shake ─── */
+@keyframes card-shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-6px); }
+  55%       { transform: translateX(5px); }
+  80%       { transform: translateX(-3px); }
+}
+
+.card.shake {
+  animation: card-shake 0.38s ease;
 }
 
 /* ─── Quiz feedback indicator ─── */

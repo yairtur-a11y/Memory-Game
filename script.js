@@ -432,6 +432,7 @@ function createBoard() {
       if (gameState.lockBoard || card === gameState.firstCard || card.classList.contains("matched")) return;
 
       flipCard(card);
+      Feedback.flip();
 
       if (!gameState.firstCard) {
         gameState.firstCard = card;
@@ -445,6 +446,7 @@ function createBoard() {
       if (gameState.firstCard.dataset.pairId === gameState.secondCard.dataset.pairId) {
         gameState.firstCard.classList.add("matched");
         gameState.secondCard.classList.add("matched");
+        Feedback.correct();
 
         gameState.matchedPairs++;
         addPairBadge(gameState.firstCard, gameState.matchedPairs);
@@ -456,11 +458,17 @@ function createBoard() {
 
         if (gameState.matchedPairs === gameState.totalPairs) {
           stopTimer();
+          Feedback.win();
           gameState.lockBoard = true;
           setTimeout(showWinModal, WIN_MODAL_DELAY_MS);
         }
       } else {
         gameState.lockBoard = true;
+        Feedback.wrong();
+        [gameState.firstCard, gameState.secondCard].forEach(c => {
+          c.classList.add("shake");
+          c.addEventListener("animationend", () => c.classList.remove("shake"), { once: true });
+        });
         setTimeout(() => {
           unflipCard(gameState.firstCard);
           unflipCard(gameState.secondCard);
@@ -547,6 +555,8 @@ function handleAnswer(btn, question) {
   const isCorrect = btn.dataset.code === question.correct.code;
   if (isCorrect) quizState.score++;
 
+  if (isCorrect) Feedback.correct(); else Feedback.wrong();
+
   const feedbackEl = document.getElementById("quiz-feedback");
   if (feedbackEl) {
     feedbackEl.textContent = isCorrect ? "✓" : "✗";
@@ -565,6 +575,7 @@ function handleAnswer(btn, question) {
     quizState.currentIndex++;
     if (quizState.currentIndex >= quizState.questions.length) {
       stopTimer();
+      Feedback.win();
       setTimeout(showWinModal, WIN_MODAL_DELAY_MS);
     } else {
       renderQuizQuestion();
@@ -655,6 +666,36 @@ winBackButton.addEventListener("click", function () {
 winStartButton.addEventListener("click", async function () {
   hideWinModal();
   await startGame();
+});
+
+// ── Feedback settings ──────────────────────────────────────────────────────
+
+function syncFeedbackButtons() {
+  document.querySelectorAll(".feedback-btn[data-feedback='sound']").forEach(btn => {
+    btn.classList.toggle("active", Feedback.soundOn);
+  });
+  document.querySelectorAll(".feedback-btn[data-feedback='haptics']").forEach(btn => {
+    btn.classList.toggle("active", Feedback.hapticsOn);
+  });
+}
+
+document.querySelectorAll(".feedback-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const type = btn.dataset.feedback;
+    if (type === "sound") {
+      Feedback.setSound(!Feedback.soundOn);
+    } else if (type === "haptics") {
+      Feedback.setHaptics(!Feedback.hapticsOn);
+    }
+    syncFeedbackButtons();
+  });
+});
+
+syncFeedbackButtons();
+
+// Subtle tap sound for all non-card button presses
+document.addEventListener("click", e => {
+  if (e.target.closest("button") && !e.target.closest(".card")) Feedback.tap();
 });
 
 loadWorldData();
