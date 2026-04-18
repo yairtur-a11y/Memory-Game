@@ -139,6 +139,13 @@ body {
   color: white;
 }
 
+/* Haptics button on iOS — visually indicates it's unavailable */
+.feedback-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
 /* ─── Pairs stepper ─── */
 .pairs-stepper {
   display: flex;

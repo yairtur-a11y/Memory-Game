@@ -705,10 +705,10 @@ function startQuiz() {
 async function startGame() {
   if (selectedMode === "maps") {
     startButton.disabled = true;
-    startButton.textContent = "Loading map…";
+    startButton.textContent = selectedLanguage === "he" ? "טוען מפה…" : "Loading map…";
     await loadWorldData();
     startButton.disabled = false;
-    startButton.textContent = "Start Game";
+    startButton.textContent = UI_TEXT[selectedLanguage].btnStart;
   }
   if (selectedGameType === "quiz") {
     startQuiz();
@@ -784,12 +784,20 @@ function syncFeedbackButtons() {
   });
 }
 
+// Disable haptics toggle on devices where navigator.vibrate is unavailable (iOS Safari)
+if (!Feedback.canVibrate) {
+  document.querySelectorAll(".feedback-btn[data-feedback='haptics']").forEach(btn => {
+    btn.disabled = true;
+    btn.classList.remove("active");
+  });
+}
+
 document.querySelectorAll(".feedback-btn").forEach(btn => {
   btn.addEventListener("click", () => {
     const type = btn.dataset.feedback;
     if (type === "sound") {
       Feedback.setSound(!Feedback.soundOn);
-    } else if (type === "haptics") {
+    } else if (type === "haptics" && Feedback.canVibrate) {
       Feedback.setHaptics(!Feedback.hapticsOn);
     }
     syncFeedbackButtons();
