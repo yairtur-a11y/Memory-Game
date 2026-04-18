@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Generate Icons</title></head>
+<body>
+<p>Click each button to download the icon. Save both files into this <code>icons/</code> folder.</p>
+<button onclick="download(192)">Download icon-192.png</button>
+<button onclick="download(512)">Download icon-512.png</button>
+<canvas id="c" style="display:none"></canvas>
+<script>
+function download(size) {
+  const canvas = document.getElementById("c");
+  canvas.width = canvas.height = size;
+  const ctx = canvas.getContext("2d");
+
+  // Background
+  const grad = ctx.createLinearGradient(0, 0, size, size);
+  grad.addColorStop(0, "#0f172a");
+  grad.addColorStop(1, "#1e3a5f");
+  ctx.fillStyle = grad;
+  ctx.roundRect(0, 0, size, size, size * 0.18);
+  ctx.fill();
+
+  // Globe emoji
+  ctx.font = `${size * 0.55}px serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("🌍", size / 2, size / 2);
+
+  const a = document.createElement("a");
+  a.download = `icon-${size}.png`;
+  a.href = canvas.toDataURL("image/png");
+  a.click();
+}
+</script>
+</body>
+</html>

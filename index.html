@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Memory Game</title>
+
+  <!-- PWA / iPhone home screen -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Memory">
+  <meta name="theme-color" content="#0f172a">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="manifest" href="manifest.json">
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2020/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌍</text></svg>">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div id="start-screen">
+    <div class="start-card">
+      <div class="start-header">
+        <div class="start-icon">🎴</div>
+        <h1>Memory Game</h1>
+        <p class="start-subtitle" id="start-subtitle">Match every country to its flag</p>
+      </div>
+
+      <div class="settings-section">
+        <div class="setting-group">
+          <span class="setting-label">Language / שפה</span>
+          <div class="toggle-buttons">
+            <button class="lang-btn active" data-lang="en">🇬🇧 English</button>
+            <button class="lang-btn" data-lang="he">🇮🇱 עברית</button>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <span class="setting-label">Game Type</span>
+          <div class="toggle-buttons">
+            <button class="game-type-btn active" data-type="memory">🎴 Memory</button>
+            <button class="game-type-btn" data-type="quiz">❓ Quiz</button>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <span class="setting-label">Mode</span>
+          <div class="toggle-buttons">
+            <button class="toggle-btn active" data-mode="flags">🏳️ Flags</button>
+            <button class="toggle-btn" data-mode="capitals">🏙️ Capitals</button>
+            <button class="toggle-btn" data-mode="maps">🗺️ Maps</button>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <span class="setting-label">Difficulty</span>
+          <div class="toggle-buttons">
+            <button class="diff-btn active" data-difficulty="easy">Easy</button>
+            <button class="diff-btn" data-difficulty="medium">Medium</button>
+            <button class="diff-btn" data-difficulty="hard">Hard</button>
+          </div>
+        </div>
+
+        <div class="setting-group">
+          <span class="setting-label pairs-label">Pairs</span>
+          <div class="pairs-stepper">
+            <button class="pairs-down-btn stepper-btn">−</button>
+            <span class="pairs-value">4</span>
+            <button class="pairs-up-btn stepper-btn">+</button>
+          </div>
+        </div>
+      </div>
+
+      <button id="start-btn" class="primary-btn">Start Game</button>
+    </div>
+  </div>
+
+  <div id="game-screen" class="hidden">
+    <div class="game-header">
+      <button id="home-btn" class="ghost-btn" title="Back to home">🏠</button>
+      <div class="info-bar">
+        <span>Moves: <strong id="moves">0</strong></span>
+        <span>Time: <strong id="timer">00:00</strong></span>
+      </div>
+      <button id="restart-btn" class="ghost-btn">Restart</button>
+    </div>
+
+    <div class="game-board" id="game-board"></div>
+  </div>
+
+  <div id="quiz-screen" class="hidden">
+    <div class="game-header">
+      <button id="quiz-home-btn" class="ghost-btn" title="Back to home">🏠</button>
+      <div class="info-bar">
+        <span>Question: <strong id="quiz-progress">1/1</strong></span>
+        <span>Score: <strong id="quiz-score-display">0</strong></span>
+        <span>Time: <strong id="quiz-timer">00:00</strong></span>
+      </div>
+      <button id="quiz-restart-btn" class="ghost-btn">Restart</button>
+    </div>
+    <div class="quiz-container">
+      <div id="quiz-prompt" class="quiz-prompt"></div>
+      <div id="quiz-answers" class="quiz-answers"></div>
+    </div>
+  </div>
+
+  <div id="win-modal" class="win-modal hidden">
+    <div class="win-modal-content">
+
+      <div id="win-results">
+        <div class="win-icon" id="win-icon">🏆</div>
+        <h2 id="win-title">You Won!</h2>
+        <p id="win-message"></p>
+        <div class="modal-buttons">
+          <button id="play-again-btn" class="primary-btn">Play Again</button>
+          <button id="change-difficulty-btn" class="secondary-btn">Change Settings</button>
+        </div>
+      </div>
+
+      <div id="win-settings" class="hidden">
+        <h2>New Game</h2>
+        <div class="settings-section">
+          <div class="setting-group">
+            <span class="setting-label">Language / שפה</span>
+            <div class="toggle-buttons">
+              <button class="lang-btn active" data-lang="en">🇬🇧 English</button>
+              <button class="lang-btn" data-lang="he">🇮🇱 עברית</button>
+            </div>
+          </div>
+          <div class="setting-group">
+            <span class="setting-label">Game Type</span>
+            <div class="toggle-buttons">
+              <button class="game-type-btn active" data-type="memory">🎴 Memory</button>
+              <button class="game-type-btn" data-type="quiz">❓ Quiz</button>
+            </div>
+          </div>
+          <div class="setting-group">
+            <span class="setting-label">Mode</span>
+            <div class="toggle-buttons">
+              <button class="toggle-btn active" data-mode="flags">🏳️ Flags</button>
+              <button class="toggle-btn" data-mode="capitals">🏙️ Capitals</button>
+              <button class="toggle-btn" data-mode="maps">🗺️ Maps</button>
+            </div>
+          </div>
+          <div class="setting-group">
+            <span class="setting-label">Difficulty</span>
+            <div class="toggle-buttons">
+              <button class="diff-btn active" data-difficulty="easy">Easy</button>
+              <button class="diff-btn" data-difficulty="medium">Medium</button>
+              <button class="diff-btn" data-difficulty="hard">Hard</button>
+            </div>
+          </div>
+          <div class="setting-group">
+            <span class="setting-label pairs-label">Pairs</span>
+            <div class="pairs-stepper">
+              <button class="pairs-down-btn stepper-btn">−</button>
+              <span class="pairs-value">4</span>
+              <button class="pairs-up-btn stepper-btn">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-buttons">
+          <button id="win-start-btn" class="primary-btn">Start Game</button>
+          <button id="win-back-btn" class="secondary-btn">Back</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
+  <script src="countries.js"></script>
+  <script src="maps.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
