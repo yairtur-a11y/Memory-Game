@@ -28,7 +28,7 @@
 
       <div class="settings-section">
         <div class="setting-group" data-setting="language">
-          <span class="setting-label">Language / שפה</span>
+          <span class="setting-label" data-i18n="labelLanguage">Language / שפה</span>
           <div class="toggle-buttons">
             <button class="lang-btn active" data-lang="en">🇬🇧 English</button>
             <button class="lang-btn" data-lang="he">🇮🇱 עברית</button>
@@ -36,34 +36,34 @@
         </div>
 
         <div class="setting-group">
-          <span class="setting-label">Game Type</span>
+          <span class="setting-label" data-i18n="labelGameType">Game Type</span>
           <div class="toggle-buttons">
-            <button class="game-type-btn active" data-type="memory">🎴 Memory</button>
-            <button class="game-type-btn" data-type="quiz">❓ Quiz</button>
+            <button class="game-type-btn active" data-type="memory" data-i18n="btnMemory">🎴 Memory</button>
+            <button class="game-type-btn" data-type="quiz" data-i18n="btnQuiz">❓ Quiz</button>
           </div>
         </div>
 
         <div class="setting-group">
-          <span class="setting-label">Mode</span>
+          <span class="setting-label" data-i18n="labelMode">Mode</span>
           <div class="toggle-buttons">
-            <button class="toggle-btn active" data-mode="flags">🏳️ Flags</button>
-            <button class="toggle-btn" data-mode="capitals">🏙️ Capitals</button>
-            <button class="toggle-btn" data-mode="maps">🗺️ Maps</button>
-            <button class="toggle-btn" data-mode="family">👨‍👩‍👧‍👦 Family</button>
+            <button class="toggle-btn active" data-mode="flags"    data-i18n="btnFlags">🏳️ Flags</button>
+            <button class="toggle-btn"        data-mode="capitals" data-i18n="btnCapitals">🏙️ Capitals</button>
+            <button class="toggle-btn"        data-mode="maps"     data-i18n="btnMaps">🗺️ Maps</button>
+            <button class="toggle-btn"        data-mode="family"   data-i18n="btnFamily">👨‍👩‍👧‍👦 Family</button>
           </div>
         </div>
 
         <div class="setting-group" data-setting="difficulty">
-          <span class="setting-label">Difficulty</span>
+          <span class="setting-label" data-i18n="labelDifficulty">Difficulty</span>
           <div class="toggle-buttons">
-            <button class="diff-btn active" data-difficulty="easy">Easy</button>
-            <button class="diff-btn" data-difficulty="medium">Medium</button>
-            <button class="diff-btn" data-difficulty="hard">Hard</button>
+            <button class="diff-btn active" data-difficulty="easy"   data-i18n="btnEasy">Easy</button>
+            <button class="diff-btn"        data-difficulty="medium" data-i18n="btnMedium">Medium</button>
+            <button class="diff-btn"        data-difficulty="hard"   data-i18n="btnHard">Hard</button>
           </div>
         </div>
 
         <div class="setting-group">
-          <span class="setting-label pairs-label">Pairs</span>
+          <span class="setting-label pairs-label" data-i18n="labelPairs">Pairs</span>
           <div class="pairs-stepper">
             <button class="pairs-down-btn stepper-btn">−</button>
             <span class="pairs-value">4</span>
@@ -72,15 +72,15 @@
         </div>
 
         <div class="setting-group">
-          <span class="setting-label">Feedback</span>
+          <span class="setting-label" data-i18n="labelFeedback">Feedback</span>
           <div class="toggle-buttons">
-            <button class="feedback-btn active" data-feedback="sound">🔊 Sound</button>
-            <button class="feedback-btn active" data-feedback="haptics">📳 Haptics</button>
+            <button class="feedback-btn active" data-feedback="sound"   data-i18n="btnSound">🔊 Sound</button>
+            <button class="feedback-btn active" data-feedback="haptics" data-i18n="btnHaptics">📳 Haptics</button>
           </div>
         </div>
       </div>
 
-      <button id="start-btn" class="primary-btn">Start Game</button>
+      <button id="start-btn" class="primary-btn" data-i18n="btnStart">Start Game</button>
     </div>
   </div>
 
@@ -88,11 +88,11 @@
     <div class="game-header">
       <button id="home-btn" class="ghost-btn" title="Back to home">🏠</button>
       <div class="info-bar">
-        <span>Moves: <strong id="moves">0</strong></span>
-        <span>Pairs: <strong id="pairs-progress">0/0</strong></span>
-        <span>Time: <strong id="timer">00:00</strong></span>
+        <span><span data-i18n="labelMoves">Moves</span>: <strong id="moves">0</strong></span>
+        <span><span data-i18n="labelPairsBar">Pairs</span>: <strong id="pairs-progress">0/0</strong></span>
+        <span><span data-i18n="labelTime">Time</span>: <strong id="timer">00:00</strong></span>
       </div>
-      <button id="restart-btn" class="ghost-btn">Restart</button>
+      <button id="restart-btn" class="ghost-btn" data-i18n="btnRestart">Restart</button>
     </div>
 
     <div class="game-board" id="game-board"></div>
@@ -102,11 +102,11 @@
     <div class="game-header">
       <button id="quiz-home-btn" class="ghost-btn" title="Back to home">🏠</button>
       <div class="info-bar">
-        <span>Question: <strong id="quiz-progress">1/1</strong></span>
-        <span>Score: <strong id="quiz-score-display">0</strong></span>
-        <span>Time: <strong id="quiz-timer">00:00</strong></span>
+        <span><span data-i18n="labelQuestion">Question</span>: <strong id="quiz-progress">1/1</strong></span>
+        <span><span data-i18n="labelScore">Score</span>: <strong id="quiz-score-display">0</strong></span>
+        <span><span data-i18n="labelTime">Time</span>: <strong id="quiz-timer">00:00</strong></span>
       </div>
-      <button id="quiz-restart-btn" class="ghost-btn">Restart</button>
+      <button id="quiz-restart-btn" class="ghost-btn" data-i18n="btnRestart">Restart</button>
     </div>
     <div class="quiz-container">
       <div id="quiz-prompt" class="quiz-prompt"></div>
@@ -123,65 +123,64 @@
         <h2 id="win-title">You Won!</h2>
         <p id="win-message"></p>
         <div class="modal-buttons">
-          <button id="play-again-btn" class="primary-btn">Play Again</button>
-          <button id="change-difficulty-btn" class="secondary-btn">Change Settings</button>
+          <button id="play-again-btn"      class="primary-btn"   data-i18n="btnPlayAgain">Play Again</button>
+          <button id="change-difficulty-btn" class="secondary-btn" data-i18n="btnChangeSettings">Change Settings</button>
         </div>
       </div>
 
       <div id="win-settings" class="hidden">
-        <h2>New Game</h2>
+        <h2 data-i18n="winNewGame">New Game</h2>
         <div class="settings-section">
           <div class="setting-group" data-setting="language">
-            <span class="setting-label">Language / שפה</span>
+            <span class="setting-label" data-i18n="labelLanguage">Language / שפה</span>
             <div class="toggle-buttons">
               <button class="lang-btn active" data-lang="en">🇬🇧 English</button>
               <button class="lang-btn" data-lang="he">🇮🇱 עברית</button>
             </div>
           </div>
           <div class="setting-group">
-            <span class="setting-label">Game Type</span>
+            <span class="setting-label" data-i18n="labelGameType">Game Type</span>
             <div class="toggle-buttons">
-              <button class="game-type-btn active" data-type="memory">🎴 Memory</button>
-              <button class="game-type-btn" data-type="quiz">❓ Quiz</button>
+              <button class="game-type-btn active" data-type="memory" data-i18n="btnMemory">🎴 Memory</button>
+              <button class="game-type-btn"        data-type="quiz"   data-i18n="btnQuiz">❓ Quiz</button>
             </div>
           </div>
           <div class="setting-group">
-            <span class="setting-label">Mode</span>
+            <span class="setting-label" data-i18n="labelMode">Mode</span>
             <div class="toggle-buttons">
-              <button class="toggle-btn active" data-mode="flags">🏳️ Flags</button>
-              <button class="toggle-btn" data-mode="capitals">🏙️ Capitals</button>
-              <button class="toggle-btn" data-mode="maps">🗺️ Maps</button>
-              <button class="toggle-btn" data-mode="family">👨‍👩‍👧‍👦 Family</button>
+              <button class="toggle-btn active" data-mode="flags"    data-i18n="btnFlags">🏳️ Flags</button>
+              <button class="toggle-btn"        data-mode="capitals" data-i18n="btnCapitals">🏙️ Capitals</button>
+              <button class="toggle-btn"        data-mode="maps"     data-i18n="btnMaps">🗺️ Maps</button>
+              <button class="toggle-btn"        data-mode="family"   data-i18n="btnFamily">👨‍👩‍👧‍👦 Family</button>
             </div>
           </div>
           <div class="setting-group" data-setting="difficulty">
-            <span class="setting-label">Difficulty</span>
+            <span class="setting-label" data-i18n="labelDifficulty">Difficulty</span>
             <div class="toggle-buttons">
-              <button class="diff-btn active" data-difficulty="easy">Easy</button>
-              <button class="diff-btn" data-difficulty="medium">Medium</button>
-              <button class="diff-btn" data-difficulty="hard">Hard</button>
+              <button class="diff-btn active" data-difficulty="easy"   data-i18n="btnEasy">Easy</button>
+              <button class="diff-btn"        data-difficulty="medium" data-i18n="btnMedium">Medium</button>
+              <button class="diff-btn"        data-difficulty="hard"   data-i18n="btnHard">Hard</button>
             </div>
           </div>
           <div class="setting-group">
-            <span class="setting-label pairs-label">Pairs</span>
+            <span class="setting-label pairs-label" data-i18n="labelPairs">Pairs</span>
             <div class="pairs-stepper">
               <button class="pairs-down-btn stepper-btn">−</button>
               <span class="pairs-value">4</span>
               <button class="pairs-up-btn stepper-btn">+</button>
             </div>
           </div>
-
           <div class="setting-group">
-            <span class="setting-label">Feedback</span>
+            <span class="setting-label" data-i18n="labelFeedback">Feedback</span>
             <div class="toggle-buttons">
-              <button class="feedback-btn active" data-feedback="sound">🔊 Sound</button>
-              <button class="feedback-btn active" data-feedback="haptics">📳 Haptics</button>
+              <button class="feedback-btn active" data-feedback="sound"   data-i18n="btnSound">🔊 Sound</button>
+              <button class="feedback-btn active" data-feedback="haptics" data-i18n="btnHaptics">📳 Haptics</button>
             </div>
           </div>
         </div>
         <div class="modal-buttons">
-          <button id="win-start-btn" class="primary-btn">Start Game</button>
-          <button id="win-back-btn" class="secondary-btn">Back</button>
+          <button id="win-start-btn" class="primary-btn"   data-i18n="btnWinStart">Start Game</button>
+          <button id="win-back-btn"  class="secondary-btn" data-i18n="btnBack">Back</button>
         </div>
       </div>
 
@@ -190,8 +189,8 @@
 
   <!-- Update notification banner -->
   <div id="update-banner" class="update-banner hidden">
-    <span>🔄 New version available</span>
-    <button id="update-refresh-btn">Refresh</button>
+    <span data-i18n="updateMsg">🔄 New version available</span>
+    <button id="update-refresh-btn" data-i18n="btnRefresh">Refresh</button>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>

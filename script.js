@@ -101,18 +101,17 @@ function shuffleArray(array) {
 // ── Modal ──────────────────────────────────────────────────────────────────
 
 function showWinModal() {
+  const t = UI_TEXT[selectedLanguage];
   if (selectedGameType === "quiz") {
     const total = quizState.questions.length;
     const pct = Math.round((quizState.score / total) * 100);
     winIcon.textContent = pct === 100 ? "🏆" : pct >= 60 ? "⭐" : "📚";
-    winTitle.textContent = pct === 100 ? "Perfect!" : "Quiz Done!";
-    winMessage.textContent =
-      `You scored ${quizState.score} / ${total} (${pct}%) in ${formatTime(gameState.timer)}.`;
+    winTitle.textContent = pct === 100 ? t.winPerfect : t.winQuizDone;
+    winMessage.textContent = t.winQuizMsg(quizState.score, total, pct, formatTime(gameState.timer));
   } else {
     winIcon.textContent = "🏆";
-    winTitle.textContent = "You Won!";
-    winMessage.textContent =
-      `You finished in ${gameState.moves} moves and ${formatTime(gameState.timer)}.`;
+    winTitle.textContent = t.winYouWon;
+    winMessage.textContent = t.winMemoryMsg(gameState.moves, formatTime(gameState.timer));
   }
   winModal.classList.remove("hidden");
 }
@@ -154,18 +153,122 @@ let selectedMode = "flags";
 let selectedLanguage = "en";
 let selectedGameType = "memory";
 
-const SUBTITLES = {
-  flags:    "Match every country to its flag",
-  capitals: "Match every country to its capital city",
-  maps:     "Match every country to its location on the map",
-  family:   "Match every name to their photo",
+const UI_TEXT = {
+  en: {
+    labelLanguage:     "Language / שפה",
+    labelGameType:     "Game Type",
+    labelMode:         "Mode",
+    labelDifficulty:   "Difficulty",
+    labelPairs:        "Pairs",
+    labelQuestions:    "Questions",
+    labelFeedback:     "Feedback",
+    btnMemory:         "🎴 Memory",
+    btnQuiz:           "❓ Quiz",
+    btnFlags:          "🏳️ Flags",
+    btnCapitals:       "🏙️ Capitals",
+    btnMaps:           "🗺️ Maps",
+    btnFamily:         "👨‍👩‍👧‍👦 Family",
+    btnEasy:           "Easy",
+    btnMedium:         "Medium",
+    btnHard:           "Hard",
+    btnSound:          "🔊 Sound",
+    btnHaptics:        "📳 Haptics",
+    btnStart:          "Start Game",
+    labelMoves:        "Moves",
+    labelPairsBar:     "Pairs",
+    labelTime:         "Time",
+    labelQuestion:     "Question",
+    labelScore:        "Score",
+    btnRestart:        "Restart",
+    btnPlayAgain:      "Play Again",
+    btnChangeSettings: "Change Settings",
+    winNewGame:        "New Game",
+    btnWinStart:       "Start Game",
+    btnBack:           "Back",
+    updateMsg:         "🔄 New version available",
+    btnRefresh:        "Refresh",
+    subtitleFlags:     "Match every country to its flag",
+    subtitleCapitals:  "Match every country to its capital city",
+    subtitleMaps:      "Match every country to its location on the map",
+    subtitleFamily:    "Match every name to their photo",
+    winYouWon:         "You Won!",
+    winPerfect:        "Perfect!",
+    winQuizDone:       "Quiz Done!",
+    winMemoryMsg:      (moves, time) => `You finished in ${moves} moves and ${time}.`,
+    winQuizMsg:        (score, total, pct, time) => `You scored ${score} / ${total} (${pct}%) in ${time}.`,
+  },
+  he: {
+    labelLanguage:     "שפה / Language",
+    labelGameType:     "סוג משחק",
+    labelMode:         "מצב",
+    labelDifficulty:   "רמת קושי",
+    labelPairs:        "זוגות",
+    labelQuestions:    "שאלות",
+    labelFeedback:     "משוב",
+    btnMemory:         "🎴 זיכרון",
+    btnQuiz:           "❓ חידון",
+    btnFlags:          "🏳️ דגלים",
+    btnCapitals:       "🏙️ בירות",
+    btnMaps:           "🗺️ מפות",
+    btnFamily:         "👨‍👩‍👧‍👦 משפחה",
+    btnEasy:           "קל",
+    btnMedium:         "בינוני",
+    btnHard:           "קשה",
+    btnSound:          "🔊 צליל",
+    btnHaptics:        "📳 רטט",
+    btnStart:          "התחל משחק",
+    labelMoves:        "מהלכים",
+    labelPairsBar:     "זוגות",
+    labelTime:         "זמן",
+    labelQuestion:     "שאלה",
+    labelScore:        "ניקוד",
+    btnRestart:        "התחל מחדש",
+    btnPlayAgain:      "שחק שוב",
+    btnChangeSettings: "שנה הגדרות",
+    winNewGame:        "משחק חדש",
+    btnWinStart:       "התחל משחק",
+    btnBack:           "חזרה",
+    updateMsg:         "🔄 גרסה חדשה זמינה",
+    btnRefresh:        "רענן",
+    subtitleFlags:     "התאם כל מדינה לדגל שלה",
+    subtitleCapitals:  "התאם כל מדינה לבירה שלה",
+    subtitleMaps:      "התאם כל מדינה למיקום שלה במפה",
+    subtitleFamily:    "התאם כל שם לתמונה שלו",
+    winYouWon:         "ניצחת!",
+    winPerfect:        "מושלם!",
+    winQuizDone:       "סיום חידון!",
+    winMemoryMsg:      (moves, time) => `סיימת ב־${moves} מהלכים, בזמן ${time}`,
+    winQuizMsg:        (score, total, pct, time) => `ניקדת ${score} מתוך ${total} (${pct}%) בזמן ${time}`,
+  },
 };
+
+function applyLanguageToUI(lang) {
+  const t = UI_TEXT[lang];
+  // Update every element with data-i18n
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const key = el.dataset.i18n;
+    if (typeof t[key] === "string") el.textContent = t[key];
+  });
+  // RTL direction for Hebrew
+  document.querySelectorAll(".start-card, .win-modal-content").forEach(el => {
+    el.dir = lang === "he" ? "rtl" : "";
+  });
+  // Subtitle depends on current mode
+  const subtitleKey = "subtitle" + selectedMode.charAt(0).toUpperCase() + selectedMode.slice(1);
+  const subtitle = document.getElementById("start-subtitle");
+  if (subtitle && t[subtitleKey]) subtitle.textContent = t[subtitleKey];
+  // Pairs/Questions label depends on current game type
+  document.querySelectorAll(".pairs-label").forEach(el => {
+    el.textContent = selectedGameType === "quiz" ? t.labelQuestions : t.labelPairs;
+  });
+}
 
 function setLanguage(lang) {
   selectedLanguage = lang;
   document.querySelectorAll(".lang-btn").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.lang === lang);
   });
+  applyLanguageToUI(lang);
 }
 
 function countryName(c) {
@@ -181,8 +284,9 @@ function setGameType(type) {
   document.querySelectorAll(".game-type-btn").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.type === type);
   });
+  const t = UI_TEXT[selectedLanguage];
   document.querySelectorAll(".pairs-label").forEach(el => {
-    el.textContent = type === "quiz" ? "Questions" : "Pairs";
+    el.textContent = type === "quiz" ? t.labelQuestions : t.labelPairs;
   });
 }
 
@@ -201,8 +305,9 @@ function setMode(mode) {
   document.querySelectorAll(".toggle-btn").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.mode === mode);
   });
+  const subtitleKey = "subtitle" + mode.charAt(0).toUpperCase() + mode.slice(1);
   const subtitle = document.getElementById("start-subtitle");
-  if (subtitle) subtitle.textContent = SUBTITLES[mode];
+  if (subtitle) subtitle.textContent = UI_TEXT[selectedLanguage][subtitleKey] || "";
   if (mode === "maps") loadWorldData();
   updateSettingsVisibility(mode);
   updatePairsDisplay();
@@ -700,6 +805,7 @@ document.addEventListener("click", e => {
 
 loadWorldData();
 updatePairsDisplay();
+applyLanguageToUI(selectedLanguage);
 showStartScreen();
 
 if ("serviceWorker" in navigator) {
