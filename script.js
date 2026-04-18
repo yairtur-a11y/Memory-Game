@@ -659,21 +659,13 @@ function renderCountryMapSVG(code) {
     const targetFeature = countries.features.find(f => String(f.id) === String(numericId));
     if (!targetFeature) return null;
 
-    // Auto-fit the projection to the target country with 20% padding on each side
     const projection = d3.geoMercator();
-    const padX = W * 0.20, padY = H * 0.20;
-    projection.fitExtent([[padX, padY], [W - padX, H - padY]], targetFeature);
-
-    // Cap scale so tiny countries (Monaco, Singapore…) show surrounding context
-    // rather than zooming into a microscopic dot
-    const MAX_SCALE = 6000;
-    if (projection.scale() > MAX_SCALE) {
-      const centroid = d3.geoCentroid(targetFeature);
-      projection.scale(MAX_SCALE);
-      // Re-center: shift translate so the geographic centroid lands at canvas centre
-      const [px, py] = projection(centroid);
-      const [tx, ty] = projection.translate();
-      projection.translate([tx + W / 2 - px, ty + H / 2 - py]);
+    const config = COUNTRY_MAP_CONFIG[code];
+    if (config) {
+      projection.center(config.center).scale(config.scale).translate([W / 2, H / 2]);
+    } else {
+      const padX = W * 0.20, padY = H * 0.20;
+      projection.fitExtent([[padX, padY], [W - padX, H - padY]], targetFeature);
     }
 
     const path = d3.geoPath(projection);
