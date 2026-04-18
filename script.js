@@ -6,6 +6,7 @@ const QUIZ_ADVANCE_DELAY_MS = 1200;
 
 const board = document.getElementById("game-board");
 const movesDisplay = document.getElementById("moves");
+const pairsProgressDisplay = document.getElementById("pairs-progress");
 const timerDisplay = document.getElementById("timer");
 const restartButton = document.getElementById("restart-btn");
 const homeButton = document.getElementById("home-btn");
@@ -399,6 +400,7 @@ function createBoard() {
 
   resetGameState();
   movesDisplay.textContent = gameState.moves;
+  pairsProgressDisplay.textContent = `0/${gameState.totalPairs}`;
 
   startTimer(timerDisplay);
 
@@ -436,6 +438,7 @@ function createBoard() {
         gameState.matchedPairs++;
         addPairBadge(gameState.firstCard, gameState.matchedPairs);
         addPairBadge(gameState.secondCard, gameState.matchedPairs);
+        pairsProgressDisplay.textContent = `${gameState.matchedPairs}/${gameState.totalPairs}`;
 
         gameState.firstCard = null;
         gameState.secondCard = null;
