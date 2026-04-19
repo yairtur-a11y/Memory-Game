@@ -718,8 +718,15 @@ function renderCountryMapSVG(code) {
     const path = d3.geoPath(projection);
     const borders = topojson.mesh(worldData, worldData.objects.countries, (a, b) => a !== b);
 
+    // Embed the target's pixel centroid and bounding-box so applyMapZoom can
+    // set an initial zoom focused on the country rather than showing the world.
+    const [pcx, pcy] = path.centroid(mainFeature);
+    const [[bx0, by0], [bx1, by1]] = path.bounds(mainFeature);
+
     const parts = [
-      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}">`,
+      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" ` +
+        `data-cx="${pcx.toFixed(1)}" data-cy="${pcy.toFixed(1)}" ` +
+        `data-bw="${(bx1-bx0).toFixed(1)}" data-bh="${(by1-by0).toFixed(1)}">`,
       `<rect width="${W}" height="${H}" fill="#bfdbfe"/>`,
       `<g class="map-layer">`,
     ];
@@ -775,8 +782,17 @@ function renderStateMapSVG(fips) {
     const states  = topojson.feature(usMapData, usMapData.objects.states);
     const borders = topojson.mesh(usMapData, usMapData.objects.states, (a, b) => a !== b);
 
+    const targetState = states.features.find(f => Number(f.id) === fips);
+    let svgAttrs = `viewBox="0 0 ${W} ${H}"`;
+    if (targetState) {
+      const [pcx, pcy] = path.centroid(targetState);
+      const [[bx0, by0], [bx1, by1]] = path.bounds(targetState);
+      svgAttrs += ` data-cx="${pcx.toFixed(1)}" data-cy="${pcy.toFixed(1)}" ` +
+        `data-bw="${(bx1-bx0).toFixed(1)}" data-bh="${(by1-by0).toFixed(1)}"`;
+    }
+
     const parts = [
-      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}">`,
+      `<svg xmlns="http://www.w3.org/2000/svg" ${svgAttrs}>`,
       `<rect width="${W}" height="${H}" fill="#bfdbfe"/>`,
       `<g class="map-layer">`,
     ];
@@ -1001,19 +1017,40 @@ function applyMapZoom(container) {
   const g = svg.querySelector('.map-layer');
   if (!g) return;
 
+  const vb  = svg.getAttribute('viewBox').split(' ').map(Number);
+  const W = vb[2], H = vb[3];
+  const cx  = parseFloat(svg.dataset.cx);
+  const cy  = parseFloat(svg.dataset.cy);
+  const bw  = parseFloat(svg.dataset.bw);
+  const bh  = parseFloat(svg.dataset.bh);
+
+  // Start zoomed in so the target country fills ~60 % of the canvas.
+  // The ⌖ reset button returns here, not to the full-world view.
+  let initTransform = d3.zoomIdentity;
+  if (!isNaN(cx) && !isNaN(cy) && bw > 0 && bh > 0) {
+    const rawK = Math.min(W * 0.60 / bw, H * 0.60 / bh);
+    const initK = Math.max(1.0, Math.min(rawK, 6.0));
+    // d3.zoomIdentity.scale(k).translate(tx, ty) → transform {k, x: k*tx, y: k*ty}
+    initTransform = d3.zoomIdentity
+      .scale(initK)
+      .translate(W / (2 * initK) - cx, H / (2 * initK) - cy);
+  }
+
   const zoomBehavior = d3.zoom()
-    .scaleExtent([0.5, 16])
+    .scaleExtent([0.3, 20])
     .on('zoom', e => { g.setAttribute('transform', e.transform.toString()); });
 
-  const svgSel = d3.select(svg).call(zoomBehavior);
+  const svgSel = d3.select(svg)
+    .call(zoomBehavior)
+    .call(zoomBehavior.transform, initTransform);
 
   // Floating zoom controls
   const controls = document.createElement('div');
   controls.className = 'map-zoom-controls';
   controls.innerHTML =
-    `<button class="map-zoom-btn" data-zoom="in" title="Zoom in">+</button>` +
-    `<button class="map-zoom-btn" data-zoom="reset" title="Reset">⌖</button>` +
-    `<button class="map-zoom-btn" data-zoom="out" title="Zoom out">−</button>`;
+    `<button class="map-zoom-btn" data-zoom="in"    title="Zoom in">+</button>` +
+    `<button class="map-zoom-btn" data-zoom="reset" title="Reset view">⌖</button>` +
+    `<button class="map-zoom-btn" data-zoom="out"   title="Zoom out">−</button>`;
   container.appendChild(controls);
 
   controls.addEventListener('click', e => {
@@ -1022,7 +1059,7 @@ function applyMapZoom(container) {
     const action = btn.dataset.zoom;
     if      (action === 'in')    svgSel.transition().duration(250).call(zoomBehavior.scaleBy, 1.6);
     else if (action === 'out')   svgSel.transition().duration(250).call(zoomBehavior.scaleBy, 1 / 1.6);
-    else                         svgSel.transition().duration(300).call(zoomBehavior.transform, d3.zoomIdentity);
+    else                         svgSel.transition().duration(300).call(zoomBehavior.transform, initTransform);
   });
 }
 
