@@ -647,18 +647,25 @@ async function loadWorldData() {
 
 // Returns the largest contiguous polygon from a feature (Polygon or MultiPolygon).
 // Prevents sprawling overseas territories (France, US, etc.) from forcing a world-level view.
+// Falls back to the original feature if nothing better can be found.
 function getLargestPolygon(feature) {
+  if (!feature || !feature.geometry) return feature;
   if (feature.geometry.type === 'Polygon') {
     return { type: 'Feature', geometry: feature.geometry, properties: {} };
   }
-  let maxArea = -1, best = null;
+  if (feature.geometry.type !== 'MultiPolygon') return feature;
+  let maxArea = -Infinity, best = null;
   for (const polyCoords of feature.geometry.coordinates) {
     const poly = { type: 'Feature', geometry: { type: 'Polygon', coordinates: polyCoords }, properties: {} };
-    const [[w, s], [e, n]] = d3.geoBounds(poly);
-    const area = (e - w) * (n - s);
-    if (area > maxArea) { maxArea = area; best = poly; }
+    try {
+      const [[w, s], [e, n]] = d3.geoBounds(poly);
+      // Use absolute area; skip antimeridian-wrapped polygons (e > w check)
+      const area = (e > w) ? (e - w) * (n - s) : 0;
+      if (area > maxArea) { maxArea = area; best = poly; }
+    } catch (_) {}
   }
-  return best;
+  // Fall back to the whole feature if selection failed
+  return best || feature;
 }
 
 function renderCountryMapSVG(code) {
@@ -686,11 +693,11 @@ function renderCountryMapSVG(code) {
     if (dLon < 0) dLon += 360; // antimeridian wrap (Russia, Fiji, …)
     const dLat = north - south;
 
-    // Show the country at ~1/3 of the canvas; expand 3× for regional context.
-    // Clamp so we never show more than a continental slice (no world maps).
-    const CONTEXT = 3.0;
-    const viewDLon = Math.min(Math.max(dLon * CONTEXT, 8),  120);
-    const viewDLat = Math.min(Math.max(dLat * CONTEXT, 5),   80);
+    // Show country at roughly half the canvas; 2× expansion gives regional context.
+    // Cap at 70° lon / 50° lat so we never show more than a sub-continental slice.
+    const CONTEXT = 2.0;
+    const viewDLon = Math.min(Math.max(dLon * CONTEXT, 8),  70);
+    const viewDLat = Math.min(Math.max(dLat * CONTEXT, 5),  50);
 
     // Build a bounding-box GeoJSON feature centred on the country's centroid.
     const lon0 = centroid[0] - viewDLon / 2;
