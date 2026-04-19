@@ -635,11 +635,21 @@ function getGameSettings() {
 let worldData = null;
 const mapSvgCache = {};
 
+// Functions registered here are called once worldData (or usMapData) finishes loading,
+// so any quiz prompt that showed the 🗺️ fallback gets re-rendered automatically.
+const pendingMapRenders = [];
+
+function flushPendingMapRenders() {
+  const batch = pendingMapRenders.splice(0);
+  batch.forEach(fn => fn());
+}
+
 async function loadWorldData() {
   if (worldData) return;
   try {
     const res = await fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json");
     worldData = await res.json();
+    flushPendingMapRenders();
   } catch (e) {
     console.error("Failed to load world map data:", e);
   }
@@ -720,13 +730,21 @@ function renderCountryMapSVG(code) {
 
     // Embed the target's pixel centroid and bounding-box so applyMapZoom can
     // set an initial zoom focused on the country rather than showing the world.
-    const [pcx, pcy] = path.centroid(mainFeature);
-    const [[bx0, by0], [bx1, by1]] = path.bounds(mainFeature);
+    // Wrapped in its own try-catch: a bad geometry must not abort the whole render.
+    let svgOpenTag = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"`;
+    try {
+      const [pcx, pcy] = path.centroid(mainFeature);
+      const [[bx0, by0], [bx1, by1]] = path.bounds(mainFeature);
+      if (isFinite(pcx) && isFinite(pcy) && isFinite(bx0) && isFinite(bx1)) {
+        svgOpenTag +=
+          ` data-cx="${pcx.toFixed(1)}" data-cy="${pcy.toFixed(1)}"` +
+          ` data-bw="${(bx1-bx0).toFixed(1)}" data-bh="${(by1-by0).toFixed(1)}"`;
+      }
+    } catch (_) {}
+    svgOpenTag += '>';
 
     const parts = [
-      `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" ` +
-        `data-cx="${pcx.toFixed(1)}" data-cy="${pcy.toFixed(1)}" ` +
-        `data-bw="${(bx1-bx0).toFixed(1)}" data-bh="${(by1-by0).toFixed(1)}">`,
+      svgOpenTag,
       `<rect width="${W}" height="${H}" fill="#bfdbfe"/>`,
       `<g class="map-layer">`,
     ];
@@ -765,6 +783,7 @@ async function loadUsMapData() {
   try {
     const res = await fetch("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json");
     usMapData = await res.json();
+    flushPendingMapRenders();
   } catch (e) {
     console.error("Failed to load US map data:", e);
   }
@@ -785,10 +804,14 @@ function renderStateMapSVG(fips) {
     const targetState = states.features.find(f => Number(f.id) === fips);
     let svgAttrs = `viewBox="0 0 ${W} ${H}"`;
     if (targetState) {
-      const [pcx, pcy] = path.centroid(targetState);
-      const [[bx0, by0], [bx1, by1]] = path.bounds(targetState);
-      svgAttrs += ` data-cx="${pcx.toFixed(1)}" data-cy="${pcy.toFixed(1)}" ` +
-        `data-bw="${(bx1-bx0).toFixed(1)}" data-bh="${(by1-by0).toFixed(1)}"`;
+      try {
+        const [pcx, pcy] = path.centroid(targetState);
+        const [[bx0, by0], [bx1, by1]] = path.bounds(targetState);
+        if (isFinite(pcx) && isFinite(pcy) && isFinite(bx0) && isFinite(bx1)) {
+          svgAttrs += ` data-cx="${pcx.toFixed(1)}" data-cy="${pcy.toFixed(1)}"` +
+            ` data-bw="${(bx1-bx0).toFixed(1)}" data-bh="${(by1-by0).toFixed(1)}"`;
+        }
+      } catch (_) {}
     }
 
     const parts = [
@@ -1077,14 +1100,24 @@ function renderPromptInEl(el, item, isTypeMode) {
     el.innerHTML =
       `<img class="quiz-flag" src="https://flagcdn.com/w320/${item.code}.png" alt="Flag">`;
   } else if (selectedMode === "maps") {
-    const svg = selectedCategory === "america"
-      ? renderStateMapSVG(item.fips)
-      : renderCountryMapSVG(item.code);
+    const isAmerica = selectedCategory === "america";
+    const renderFn = () => isAmerica ? renderStateMapSVG(item.fips) : renderCountryMapSVG(item.code);
+    const svg = renderFn();
     if (svg) {
       el.innerHTML = `<div class="quiz-map">${svg}</div>`;
       applyMapZoom(el.querySelector('.quiz-map'));
     } else {
       el.innerHTML = `<div class="quiz-map-loading">🗺️</div>`;
+      // Queue a re-render for when map data finishes loading.
+      // The retry checks the placeholder is still in the DOM before replacing it.
+      pendingMapRenders.push(() => {
+        if (!el.querySelector('.quiz-map-loading')) return;
+        const retrySvg = renderFn();
+        if (retrySvg) {
+          el.innerHTML = `<div class="quiz-map">${retrySvg}</div>`;
+          applyMapZoom(el.querySelector('.quiz-map'));
+        }
+      });
     }
   } else {
     // capitals: show country/state name; answer is the capital
