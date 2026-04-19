@@ -30,8 +30,8 @@
         <div class="setting-group" data-setting="language">
           <span class="setting-label" data-i18n="labelLanguage">Language / שפה</span>
           <div class="toggle-buttons">
-            <button class="lang-btn active" data-lang="en">🇬🇧 English</button>
-            <button class="lang-btn" data-lang="he">🇮🇱 עברית</button>
+            <button class="lang-btn" data-lang="en">🇬🇧 English</button>
+            <button class="lang-btn active" data-lang="he">🇮🇱 עברית</button>
           </div>
         </div>
 
@@ -65,8 +65,8 @@
         <div class="setting-group" data-setting="difficulty">
           <span class="setting-label" data-i18n="labelDifficulty">Difficulty</span>
           <div class="toggle-buttons">
-            <button class="diff-btn active" data-difficulty="easy"   data-i18n="btnEasy">Easy</button>
-            <button class="diff-btn"        data-difficulty="mix"    data-i18n="btnMix">Mix</button>
+            <button class="diff-btn"        data-difficulty="easy"   data-i18n="btnEasy">Easy</button>
+            <button class="diff-btn active" data-difficulty="mix"    data-i18n="btnMix">Mix</button>
             <button class="diff-btn"        data-difficulty="hard"   data-i18n="btnHard">Hard</button>
           </div>
         </div>
@@ -75,7 +75,7 @@
           <span class="setting-label pairs-label" data-i18n="labelPairs">Pairs</span>
           <div class="pairs-stepper">
             <button class="pairs-down-btn stepper-btn">−</button>
-            <span class="pairs-value">4</span>
+            <span class="pairs-value">6</span>
             <button class="pairs-up-btn stepper-btn">+</button>
           </div>
         </div>
@@ -88,6 +88,11 @@
           </div>
         </div>
 
+      </div>
+
+      <button id="start-btn" class="primary-btn" data-i18n="btnStart">Start Game</button>
+
+      <div class="settings-section" style="margin-top:0">
         <div class="setting-group">
           <span class="setting-label" data-i18n="labelFeedback">Feedback</span>
           <div class="toggle-buttons">
@@ -96,8 +101,6 @@
           </div>
         </div>
       </div>
-
-      <button id="start-btn" class="primary-btn" data-i18n="btnStart">Start Game</button>
       <p class="app-version"></p>
     </div>
   </div>
@@ -127,8 +130,9 @@
       <button id="quiz-restart-btn" class="ghost-btn" data-i18n="btnRestart">Restart</button>
     </div>
     <div class="quiz-container">
-      <div id="quiz-prompt" class="quiz-prompt"></div>
-      <div id="quiz-feedback" class="quiz-feedback hidden"></div>
+      <div id="quiz-prompt" class="quiz-prompt">
+        <div id="quiz-feedback" class="quiz-feedback hidden"></div>
+      </div>
       <div id="quiz-answers" class="quiz-answers"></div>
     </div>
   </div>
@@ -144,8 +148,9 @@
       <button id="type-restart-btn" class="ghost-btn" data-i18n="btnRestart">Restart</button>
     </div>
     <div class="quiz-container">
-      <div id="type-prompt" class="quiz-prompt"></div>
-      <div id="type-feedback" class="quiz-feedback hidden"></div>
+      <div id="type-prompt" class="quiz-prompt">
+        <div id="type-feedback" class="quiz-feedback hidden"></div>
+      </div>
       <div id="type-reveal" class="type-reveal hidden"></div>
       <div class="type-input-area">
         <input type="text" id="type-input" class="type-input"
@@ -192,8 +197,8 @@
           <div class="setting-group" data-setting="language">
             <span class="setting-label" data-i18n="labelLanguage">Language / שפה</span>
             <div class="toggle-buttons">
-              <button class="lang-btn active" data-lang="en">🇬🇧 English</button>
-              <button class="lang-btn" data-lang="he">🇮🇱 עברית</button>
+              <button class="lang-btn" data-lang="en">🇬🇧 English</button>
+              <button class="lang-btn active" data-lang="he">🇮🇱 עברית</button>
             </div>
           </div>
           <div class="setting-group">
@@ -222,8 +227,8 @@
           <div class="setting-group" data-setting="difficulty">
             <span class="setting-label" data-i18n="labelDifficulty">Difficulty</span>
             <div class="toggle-buttons">
-              <button class="diff-btn active" data-difficulty="easy"   data-i18n="btnEasy">Easy</button>
-              <button class="diff-btn"        data-difficulty="mix"    data-i18n="btnMix">Mix</button>
+              <button class="diff-btn"        data-difficulty="easy"   data-i18n="btnEasy">Easy</button>
+              <button class="diff-btn active" data-difficulty="mix"    data-i18n="btnMix">Mix</button>
               <button class="diff-btn"        data-difficulty="hard"   data-i18n="btnHard">Hard</button>
             </div>
           </div>
@@ -231,7 +236,7 @@
             <span class="setting-label pairs-label" data-i18n="labelPairs">Pairs</span>
             <div class="pairs-stepper">
               <button class="pairs-down-btn stepper-btn">−</button>
-              <span class="pairs-value">4</span>
+              <span class="pairs-value">6</span>
               <button class="pairs-up-btn stepper-btn">+</button>
             </div>
           </div>

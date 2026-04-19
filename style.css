@@ -638,6 +638,7 @@ button {
 
 /* ─── Quiz prompt ─── */
 .quiz-prompt {
+  position: relative;
   width: 100%;
   display: flex;
   justify-content: center;
@@ -927,10 +928,18 @@ button {
 }
 
 /* ─── Quiz feedback indicator ─── */
+/* Overlaid on top of the prompt so it never shifts the answer buttons */
 .quiz-feedback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 52px;
   font-weight: 900;
   text-align: center;
+  pointer-events: none;
+  z-index: 10;
   line-height: 1;
   animation: feedback-pop 0.25s ease;
 }

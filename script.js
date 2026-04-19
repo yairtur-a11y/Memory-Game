@@ -322,11 +322,11 @@ function showQuizScreen() {
 const MAX_PAIRS = 20;
 const DEFAULT_PAIRS = { easy: 4, hard: 6, mix: 8 };
 
-let selectedDifficulty = "easy";
-let selectedPairs = DEFAULT_PAIRS.easy;
+let selectedDifficulty = "mix";
+let selectedPairs = 6;
 let selectedCategory = "world"; // "world" | "america" | "family"
 let selectedMode = "flags";     // "flags" | "capitals" | "maps"
-let selectedLanguage = "en";
+let selectedLanguage = "he";
 let selectedGameType = "quiz";
 let selectedQuizDirection = "photo-to-name";
 
