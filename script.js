@@ -721,6 +721,7 @@ function renderCountryMapSVG(code) {
     const parts = [
       `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}">`,
       `<rect width="${W}" height="${H}" fill="#bfdbfe"/>`,
+      `<g class="map-layer">`,
     ];
 
     for (const feature of countries.features) {
@@ -736,6 +737,7 @@ function renderCountryMapSVG(code) {
     const borderD = path(borders);
     if (borderD) parts.push(`<path d="${borderD}" fill="none" stroke="#94a3b8" stroke-width="0.3"/>`);
 
+    parts.push(`</g>`);
     parts.push("</svg>");
     const svg = parts.join("");
     mapSvgCache[code] = svg;
@@ -776,6 +778,7 @@ function renderStateMapSVG(fips) {
     const parts = [
       `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}">`,
       `<rect width="${W}" height="${H}" fill="#bfdbfe"/>`,
+      `<g class="map-layer">`,
     ];
 
     for (const feature of states.features) {
@@ -791,6 +794,7 @@ function renderStateMapSVG(fips) {
     const borderD = path(borders);
     if (borderD) parts.push(`<path d="${borderD}" fill="none" stroke="#94a3b8" stroke-width="0.3"/>`);
 
+    parts.push(`</g>`);
     parts.push("</svg>");
     const svg = parts.join("");
     stateMapSvgCache[fips] = svg;
@@ -989,6 +993,39 @@ function buildQuizQuestions() {
   });
 }
 
+// ── Interactive map zoom ───────────────────────────────────────────────────
+
+function applyMapZoom(container) {
+  const svg = container.querySelector('svg');
+  if (!svg) return;
+  const g = svg.querySelector('.map-layer');
+  if (!g) return;
+
+  const zoomBehavior = d3.zoom()
+    .scaleExtent([0.5, 16])
+    .on('zoom', e => { g.setAttribute('transform', e.transform.toString()); });
+
+  const svgSel = d3.select(svg).call(zoomBehavior);
+
+  // Floating zoom controls
+  const controls = document.createElement('div');
+  controls.className = 'map-zoom-controls';
+  controls.innerHTML =
+    `<button class="map-zoom-btn" data-zoom="in" title="Zoom in">+</button>` +
+    `<button class="map-zoom-btn" data-zoom="reset" title="Reset">⌖</button>` +
+    `<button class="map-zoom-btn" data-zoom="out" title="Zoom out">−</button>`;
+  container.appendChild(controls);
+
+  controls.addEventListener('click', e => {
+    const btn = e.target.closest('[data-zoom]');
+    if (!btn) return;
+    const action = btn.dataset.zoom;
+    if      (action === 'in')    svgSel.transition().duration(250).call(zoomBehavior.scaleBy, 1.6);
+    else if (action === 'out')   svgSel.transition().duration(250).call(zoomBehavior.scaleBy, 1 / 1.6);
+    else                         svgSel.transition().duration(300).call(zoomBehavior.transform, d3.zoomIdentity);
+  });
+}
+
 // ── Shared prompt rendering ────────────────────────────────────────────────
 
 function renderPromptInEl(el, item, isTypeMode) {
@@ -1006,9 +1043,12 @@ function renderPromptInEl(el, item, isTypeMode) {
     const svg = selectedCategory === "america"
       ? renderStateMapSVG(item.fips)
       : renderCountryMapSVG(item.code);
-    el.innerHTML = svg
-      ? `<div class="quiz-map">${svg}</div>`
-      : `<div class="quiz-map-loading">🗺️</div>`;
+    if (svg) {
+      el.innerHTML = `<div class="quiz-map">${svg}</div>`;
+      applyMapZoom(el.querySelector('.quiz-map'));
+    } else {
+      el.innerHTML = `<div class="quiz-map-loading">🗺️</div>`;
+    }
   } else {
     // capitals: show country/state name; answer is the capital
     const name = selectedCategory === "america" ? stateName(item) : countryName(item);
