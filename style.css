@@ -629,6 +629,7 @@ button {
 }
 
 .quiz-container {
+  position: relative;
   width: min(560px, 95vw);
   display: flex;
   flex-direction: column;
@@ -638,7 +639,6 @@ button {
 
 /* ─── Quiz prompt ─── */
 .quiz-prompt {
-  position: relative;
   width: 100%;
   display: flex;
   justify-content: center;
@@ -928,18 +928,19 @@ button {
 }
 
 /* ─── Quiz feedback indicator ─── */
-/* Overlaid on top of the prompt so it never shifts the answer buttons */
+/* Absolute overlay over the whole quiz-container — takes zero layout space */
 .quiz-feedback {
   position: absolute;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 52px;
+  font-size: 80px;
   font-weight: 900;
   text-align: center;
   pointer-events: none;
   z-index: 10;
+  border-radius: 16px;
   line-height: 1;
   animation: feedback-pop 0.25s ease;
 }

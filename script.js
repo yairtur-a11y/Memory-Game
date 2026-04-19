@@ -200,7 +200,7 @@ function isBetterThanEntry(current, entry) {
 
 function checkLbQualification() {
   const board = loadLeaderboard();
-  if (board.length < 5) return true;
+  if (board.length < 3) return true;
   return isBetterThanEntry(getCurrentResult(), board[board.length - 1]);
 }
 
@@ -216,9 +216,9 @@ function addToLeaderboard(name) {
     if (a.pct !== b.pct) return b.pct - a.pct;
     return a.time - b.time;
   });
-  const top5 = board.slice(0, 5);
-  saveLeaderboard(top5);
-  return top5.indexOf(entry);
+  const top3 = board.slice(0, 3);
+  saveLeaderboard(top3);
+  return top3.indexOf(entry);
 }
 
 function renderLeaderboard(highlightIdx) {
@@ -393,8 +393,8 @@ const UI_TEXT = {
     typeSubmit:          "Submit ↵",
     typeNext:            "Next →",
     typeAnswerWas:       "The answer was:",
-    lbTitle:             "Top 5",
-    lbQualify:           "🏅 You made the top 5! Enter your name:",
+    lbTitle:             "Top 3",
+    lbQualify:           "🏅 You made the top 3! Enter your name:",
     lbSave:              "Save",
     lbSkip:              "Skip",
     lbNamePlaceholder:   "Your name",
@@ -461,8 +461,8 @@ const UI_TEXT = {
     typeSubmit:          "שלח ↵",
     typeNext:            "הבא →",
     typeAnswerWas:       "התשובה הנכונה:",
-    lbTitle:             "טופ 5",
-    lbQualify:           "🏅 נכנסת לטופ 5! הכנס את שמך:",
+    lbTitle:             "טופ 3",
+    lbQualify:           "🏅 נכנסת לטופ 3! הכנס את שמך:",
     lbSave:              "שמור",
     lbSkip:              "דלג",
     lbNamePlaceholder:   "השם שלך",
@@ -1025,6 +1025,122 @@ function createBoard() {
   }
 }
 
+// ── Flag similarity groups ─────────────────────────────────────────────────
+// Each inner array is a cluster of visually similar / confusable flags.
+// A country can belong to multiple groups.
+const FLAG_GROUPS = [
+  // Nordic cross — same design, different colors
+  ["no", "se", "dk", "fi", "is"],
+
+  // Nearly identical: Chad & Romania (blue/yellow/red vertical)
+  ["td", "ro"],
+
+  // Nearly identical: Indonesia & Monaco (red-over-white horizontal bicolor)
+  ["id", "mc"],
+
+  // Nearly identical: Australia & New Zealand (Union Jack + Southern Cross)
+  ["au", "nz", "fj"],
+
+  // Nearly identical: Colombia / Ecuador / Venezuela (yellow/blue/red horizontal)
+  ["co", "ec", "ve"],
+
+  // European vertical tricolors (similar layout, different hues)
+  ["fr", "ie", "ci", "it", "be", "ro", "td", "ml", "cm", "bj", "gn", "gw", "gm", "ne"],
+
+  // Slavic / European horizontal tricolors (red/white/blue or close)
+  ["ru", "nl", "lu", "sk", "si", "hr", "rs", "bg", "cz", "py", "by"],
+
+  // Baltic horizontal tricolors (very similar to each other)
+  ["ee", "lt", "lv"],
+
+  // Former Yugoslav flags (similar pan-Slavic color blocks)
+  ["rs", "hr", "si", "ba", "me", "mk", "sk", "bg"],
+
+  // Crescent & star Islamic flags
+  ["tr", "pk", "az", "dz", "tn", "my", "mv", "km", "mr"],
+
+  // Pan-Arab horizontal tricolors (red/white/black + green details)
+  ["jo", "kw", "ae", "iq", "eg", "sa", "ye", "sd", "sy", "ly", "ps"],
+
+  // Pan-African colors (red / yellow / green)
+  ["et", "gh", "ml", "cm", "sn", "ci", "ng", "ke", "gn", "tg", "bf", "bj", "sl", "gw", "lr"],
+
+  // Communist star flags
+  ["vn", "cn", "kp"],
+
+  // Central America (blue/white horizontal stripes + coat of arms)
+  ["gt", "hn", "ni", "sv", "cr"],
+
+  // Caribbean island nations (similar tropical designs)
+  ["bb", "tt", "jm", "lc", "vc", "gd", "ag", "kn", "dm", "bs", "cu", "ht", "do"],
+
+  // Gulf states (similar striped / maroon-white patterns)
+  ["qa", "bh", "kw", "ae", "om", "sa"],
+
+  // Light blue & white (South Atlantic / Mediterranean stripes)
+  ["ar", "uy", "gr", "il", "so", "fi"],
+
+  // Caucasus & Central Asia
+  ["am", "az", "ge", "kz", "kg", "uz", "tm", "tj"],
+
+  // South Asian (similar color blocks / circles)
+  ["in", "pk", "bd", "np", "af", "bt", "lk"],
+
+  // South-East Asian (horizontal stripes in similar palettes)
+  ["th", "my", "ph", "vn", "la", "mm", "kh", "id", "bn"],
+
+  // Black / red / yellow – German style horizontal tricolors
+  ["de", "be", "at", "hu", "et"],
+
+  // Diagonal stripe designs
+  ["za", "tz", "bz", "gy", "na", "pa"],
+
+  // Oceania – dark blue with constellations / stars
+  ["au", "nz", "fj", "ws", "sb", "tv", "pw", "fm", "mh"],
+
+  // Small island flags with bright diagonal / radiating rays
+  ["sc", "st", "ki", "to", "vu"],
+
+  // Red & white only (bicolor or near-bicolor)
+  ["pl", "id", "mc", "sg", "dk", "ge", "ch"],
+
+  // Red / green / white – similar tricolors
+  ["it", "hu", "bg", "ir", "mw", "bh"],
+
+  // French-speaking Africa – similar horizontal / vertical tricolors
+  ["cm", "ga", "cg", "cd", "cf", "td", "ml", "ne", "sn", "tg", "bj", "bf"],
+
+  // East Africa similar (diagonal & stars)
+  ["ke", "tz", "ug", "rw", "bi", "mz", "zm", "zw", "ao"],
+];
+
+// Returns all country codes that share a FLAG_GROUP with the given code.
+function getFlagSimilar(code) {
+  const result = new Set();
+  for (const group of FLAG_GROUPS) {
+    if (group.includes(code)) {
+      group.forEach(c => { if (c !== code) result.add(c); });
+    }
+  }
+  return [...result];
+}
+
+// Pick 3 plausible wrong-answer distractors for flags/capitals/maps-world mode.
+// Priority: 1) similar-flag countries  2) same-or-harder difficulty  3) anything else
+function pickWorldDistractors(correct, pool) {
+  const DIFF_RANK = { easy: 0, medium: 1, hard: 2 };
+  const correctRank = DIFF_RANK[correct.difficulty] ?? 0;
+  const others = pool.filter(c => c.code !== correct.code);
+
+  const similar  = new Set(getFlagSimilar(correct.code));
+
+  const bucket1 = shuffleArray(others.filter(c =>  similar.has(c.code)));
+  const bucket2 = shuffleArray(others.filter(c => !similar.has(c.code) && (DIFF_RANK[c.difficulty] ?? 0) >= correctRank));
+  const bucket3 = shuffleArray(others.filter(c => !similar.has(c.code) && (DIFF_RANK[c.difficulty] ?? 0) <  correctRank));
+
+  return [...bucket1, ...bucket2, ...bucket3].slice(0, 3);
+}
+
 // ── Quiz ───────────────────────────────────────────────────────────────────
 
 // Squared Euclidean distance between two item centroids.
@@ -1080,6 +1196,10 @@ function buildQuizQuestions() {
         const extras = shuffleArray(pool.filter(c => c.code !== item.code && !used.has(c.code)));
         wrong = [...wrong, ...extras].slice(0, 3);
       }
+    } else if (selectedCategory === "world") {
+      // Flags & capitals (world): prefer similar-flag / same-region countries,
+      // then same-or-harder difficulty, so obvious mismatches never appear.
+      wrong = pickWorldDistractors(item, pool);
     } else {
       wrong = shuffleArray(pool.filter(c => c.code !== item.code)).slice(0, 3);
     }
@@ -1091,7 +1211,9 @@ function buildQuizQuestions() {
 
 // ── Interactive map zoom ───────────────────────────────────────────────────
 
-function applyMapZoom(container) {
+// fitToView=true → start at full map (d3.zoomIdentity); used for US states
+// fitToView=false (default) → start zoomed in on the target feature
+function applyMapZoom(container, fitToView = false) {
   const svg = container.querySelector('svg');
   if (!svg) return;
   const g = svg.querySelector('.map-layer');
@@ -1107,7 +1229,7 @@ function applyMapZoom(container) {
   // Start zoomed in so the target country fills ~60 % of the canvas.
   // The ⌖ reset button returns here, not to the full-world view.
   let initTransform = d3.zoomIdentity;
-  if (!isNaN(cx) && !isNaN(cy) && bw > 0 && bh > 0) {
+  if (!fitToView && !isNaN(cx) && !isNaN(cy) && bw > 0 && bh > 0) {
     const rawK = Math.min(W * 0.60 / bw, H * 0.60 / bh);
     const initK = Math.max(1.0, Math.min(rawK, 6.0));
     // d3.zoomIdentity.scale(k).translate(tx, ty) → transform {k, x: k*tx, y: k*ty}
@@ -1162,7 +1284,7 @@ function renderPromptInEl(el, item, isTypeMode) {
     const svg = renderFn();
     if (svg) {
       el.innerHTML = `<div class="quiz-map">${svg}</div>`;
-      applyMapZoom(el.querySelector('.quiz-map'));
+      applyMapZoom(el.querySelector('.quiz-map'), isAmerica);
     } else {
       el.innerHTML = `<div class="quiz-map-loading">🗺️</div>`;
 
@@ -1175,7 +1297,7 @@ function renderPromptInEl(el, item, isTypeMode) {
         const retrySvg = renderFn();
         if (retrySvg) {
           el.innerHTML = `<div class="quiz-map">${retrySvg}</div>`;
-          applyMapZoom(el.querySelector('.quiz-map'));
+          applyMapZoom(el.querySelector('.quiz-map'), isAmerica);
         }
       };
 
