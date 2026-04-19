@@ -695,35 +695,52 @@ function renderCountryMapSVG(code) {
     // Use only the largest contiguous body so Alaska/Hawaii/overseas territories
     // don't force a world-level zoom.
     const mainFeature = getLargestPolygon(targetFeature);
+    if (!mainFeature || !mainFeature.geometry) return null;
 
-    const [[west, south], [east, north]] = d3.geoBounds(mainFeature);
-    const centroid = d3.geoCentroid(mainFeature);
-
-    let dLon = east - west;
-    if (dLon < 0) dLon += 360; // antimeridian wrap (Russia, Fiji, …)
-    const dLat = north - south;
-
-    // Show country at roughly half the canvas; 2× expansion gives regional context.
-    // Cap at 70° lon / 50° lat so we never show more than a sub-continental slice.
-    const CONTEXT = 2.0;
-    const viewDLon = Math.min(Math.max(dLon * CONTEXT, 8),  70);
-    const viewDLat = Math.min(Math.max(dLat * CONTEXT, 5),  50);
-
-    // Build a bounding-box GeoJSON feature centred on the country's centroid.
-    const lon0 = centroid[0] - viewDLon / 2;
-    const lon1 = centroid[0] + viewDLon / 2;
-    const lat0 = Math.max(centroid[1] - viewDLat / 2, -80);
-    const lat1 = Math.min(centroid[1] + viewDLat / 2,  80);
-    const bboxFeature = {
-      type: 'Feature',
-      geometry: {
-        type: 'Polygon',
-        coordinates: [[[lon0, lat0], [lon1, lat0], [lon1, lat1], [lon0, lat1], [lon0, lat0]]]
-      }
-    };
-
+    // Build the regional viewport projection.
+    // All of this is wrapped in its own try-catch: if bounds/centroid are NaN/Infinity
+    // (null geometry, antimeridian issues, etc.) we fall back to a simple fitExtent so
+    // the render never throws and always returns a usable SVG.
     const projection = d3.geoMercator();
-    projection.fitExtent([[0, 0], [W, H]], bboxFeature);
+    try {
+      const [[west, south], [east, north]] = d3.geoBounds(mainFeature);
+      const centroid = d3.geoCentroid(mainFeature);
+
+      if (!isFinite(west) || !isFinite(east) || !isFinite(centroid[0]) || !isFinite(centroid[1])) {
+        throw new Error('non-finite bounds');
+      }
+
+      let dLon = east - west;
+      if (dLon < 0) dLon += 360;
+      const dLat = north - south;
+
+      const CONTEXT = 2.0;
+      const viewDLon = Math.min(Math.max(dLon * CONTEXT, 8),  70);
+      const viewDLat = Math.min(Math.max(dLat * CONTEXT, 5),  50);
+
+      const lon0 = centroid[0] - viewDLon / 2;
+      const lon1 = centroid[0] + viewDLon / 2;
+      const lat0 = Math.max(centroid[1] - viewDLat / 2, -80);
+      const lat1 = Math.min(centroid[1] + viewDLat / 2,  80);
+
+      projection.fitExtent([[0, 0], [W, H]], {
+        type: 'Feature',
+        geometry: { type: 'Polygon', coordinates: [[[lon0, lat0], [lon1, lat0], [lon1, lat1], [lon0, lat1], [lon0, lat0]]] }
+      });
+
+      // Guard: if fitExtent produced a degenerate scale, fall back
+      if (!isFinite(projection.scale()) || projection.scale() <= 0) throw new Error('bad scale');
+
+    } catch (_) {
+      // Safe fallback: fit the target feature itself with padding
+      try {
+        projection.fitExtent([[W * 0.15, H * 0.15], [W * 0.85, H * 0.85]], mainFeature);
+        if (!isFinite(projection.scale()) || projection.scale() <= 0) throw new Error('bad scale2');
+      } catch (_2) {
+        // Last resort: standard world view
+        projection.scale(153).translate([W / 2, H / 2]);
+      }
+    }
 
     const path = d3.geoPath(projection);
     const borders = topojson.mesh(worldData, worldData.objects.countries, (a, b) => a !== b);
@@ -1021,12 +1038,50 @@ function createBoard() {
 
 // ── Quiz ───────────────────────────────────────────────────────────────────
 
+// Squared Euclidean distance between two item centroids.
+// World countries use COUNTRY_MAP_CONFIG[code].center [lon, lat].
+// US states use STATE_CENTROIDS[fips] [lat, lon].
+// Both work correctly for proximity ranking (order-independent).
+function geoDistSq(a, b) {
+  const ca = selectedCategory === "america"
+    ? STATE_CENTROIDS[a.fips]
+    : (COUNTRY_MAP_CONFIG[a.code] ? COUNTRY_MAP_CONFIG[a.code].center : null);
+  const cb = selectedCategory === "america"
+    ? STATE_CENTROIDS[b.fips]
+    : (COUNTRY_MAP_CONFIG[b.code] ? COUNTRY_MAP_CONFIG[b.code].center : null);
+  if (!ca || !cb) return Infinity;
+  const d0 = ca[0] - cb[0], d1 = ca[1] - cb[1];
+  return d0 * d0 + d1 * d1;
+}
+
 function buildQuizQuestions() {
   const pool = getPoolForDifficulty(selectedDifficulty);
   const selected = shuffleArray([...pool]).slice(0, selectedPairs);
 
   return selected.map(item => {
-    const wrong = shuffleArray(pool.filter(c => c.code !== item.code)).slice(0, 3);
+    let wrong;
+    if (selectedMode === "maps") {
+      // For map questions: pick distractors from the geographically nearest
+      // countries/states so players can't eliminate by continent at a glance.
+      const candidates = pool
+        .filter(c => c.code !== item.code)
+        .map(c => ({ c, d: geoDistSq(item, c) }))
+        .sort((a, b) => a.d - b.d);
+
+      // Sample from the 10 nearest to add variety across replays
+      const nearPool = candidates.slice(0, 10).map(e => e.c);
+      wrong = shuffleArray(nearPool).slice(0, 3);
+
+      // Fallback: fill up if nearPool was too small
+      if (wrong.length < 3) {
+        const used = new Set(wrong.map(w => w.code));
+        const extras = shuffleArray(pool.filter(c => c.code !== item.code && !used.has(c.code)));
+        wrong = [...wrong, ...extras].slice(0, 3);
+      }
+    } else {
+      wrong = shuffleArray(pool.filter(c => c.code !== item.code)).slice(0, 3);
+    }
+
     const answers = shuffleArray([item, ...wrong]);
     return { correct: item, answers };
   });
@@ -1108,16 +1163,26 @@ function renderPromptInEl(el, item, isTypeMode) {
       applyMapZoom(el.querySelector('.quiz-map'));
     } else {
       el.innerHTML = `<div class="quiz-map-loading">🗺️</div>`;
-      // Queue a re-render for when map data finishes loading.
-      // The retry checks the placeholder is still in the DOM before replacing it.
-      pendingMapRenders.push(() => {
+
+      // Single retry, guarded so it only fires once regardless of which path triggers it.
+      let retried = false;
+      const retry = () => {
+        if (retried) return;
+        retried = true;
         if (!el.querySelector('.quiz-map-loading')) return;
         const retrySvg = renderFn();
         if (retrySvg) {
           el.innerHTML = `<div class="quiz-map">${retrySvg}</div>`;
           applyMapZoom(el.querySelector('.quiz-map'));
         }
-      });
+      };
+
+      // Path 1: data wasn't loaded yet — fires when the fetch completes.
+      pendingMapRenders.push(retry);
+
+      // Path 2: data was already loaded but render failed for another reason —
+      // retry after a short delay (gives the current call stack time to unwind).
+      setTimeout(retry, 800);
     }
   } else {
     // capitals: show country/state name; answer is the capital
