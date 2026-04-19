@@ -635,21 +635,11 @@ function getGameSettings() {
 let worldData = null;
 const mapSvgCache = {};
 
-// Functions registered here are called once worldData (or usMapData) finishes loading,
-// so any quiz prompt that showed the 🗺️ fallback gets re-rendered automatically.
-const pendingMapRenders = [];
-
-function flushPendingMapRenders() {
-  const batch = pendingMapRenders.splice(0);
-  batch.forEach(fn => fn());
-}
-
 async function loadWorldData() {
   if (worldData) return;
   try {
     const res = await fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json");
     worldData = await res.json();
-    flushPendingMapRenders();
   } catch (e) {
     console.error("Failed to load world map data:", e);
   }
@@ -800,7 +790,6 @@ async function loadUsMapData() {
   try {
     const res = await fetch("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json");
     usMapData = await res.json();
-    flushPendingMapRenders();
   } catch (e) {
     console.error("Failed to load US map data:", e);
   }
@@ -1055,7 +1044,20 @@ function geoDistSq(a, b) {
 }
 
 function buildQuizQuestions() {
-  const pool = getPoolForDifficulty(selectedDifficulty);
+  let pool = getPoolForDifficulty(selectedDifficulty);
+
+  // Pre-render every candidate in maps mode to warm the cache and eliminate any
+  // country whose render returns null (missing ISO code, bad geometry, etc.).
+  // This means renderPromptInEl will always get a cached hit — never the emoji fallback.
+  if (selectedMode === "maps" && selectedCategory !== "family") {
+    pool = pool.filter(item => {
+      const svg = selectedCategory === "america"
+        ? renderStateMapSVG(item.fips)
+        : renderCountryMapSVG(item.code);
+      return svg !== null;
+    });
+  }
+
   const selected = shuffleArray([...pool]).slice(0, selectedPairs);
 
   return selected.map(item => {
@@ -1177,11 +1179,8 @@ function renderPromptInEl(el, item, isTypeMode) {
         }
       };
 
-      // Path 1: data wasn't loaded yet — fires when the fetch completes.
-      pendingMapRenders.push(retry);
-
-      // Path 2: data was already loaded but render failed for another reason —
-      // retry after a short delay (gives the current call stack time to unwind).
+      // Data should already be loaded (startQuiz/startType await it), so this
+      // retry only fires for rare computation errors (NaN geometry etc.).
       setTimeout(retry, 800);
     }
   } else {
@@ -1195,7 +1194,17 @@ function renderPromptInEl(el, item, isTypeMode) {
 // ── Type It game ───────────────────────────────────────────────────────────
 
 function buildTypeQuestions() {
-  const pool = getPoolForDifficulty(selectedDifficulty);
+  let pool = getPoolForDifficulty(selectedDifficulty);
+
+  if (selectedMode === "maps" && selectedCategory !== "family") {
+    pool = pool.filter(item => {
+      const svg = selectedCategory === "america"
+        ? renderStateMapSVG(item.fips)
+        : renderCountryMapSVG(item.code);
+      return svg !== null;
+    });
+  }
+
   const selected = shuffleArray([...pool]).slice(0, selectedPairs);
   return selected.map(item => ({ correct: item }));
 }
@@ -1303,7 +1312,10 @@ function handleTypeSubmit() {
   }
 }
 
-function startType() {
+async function startType() {
+  if (selectedMode === "maps" && selectedCategory !== "family") {
+    if (selectedCategory === "america") await loadUsMapData(); else await loadWorldData();
+  }
   hideWinModal();
   typeState.questions = buildTypeQuestions();
   typeState.currentIndex = 0;
@@ -1392,7 +1404,10 @@ function handleAnswer(btn, question) {
   }, QUIZ_ADVANCE_DELAY_MS);
 }
 
-function startQuiz() {
+async function startQuiz() {
+  if (selectedMode === "maps" && selectedCategory !== "family") {
+    if (selectedCategory === "america") await loadUsMapData(); else await loadWorldData();
+  }
   hideWinModal();
   quizState.questions = buildQuizQuestions();
   quizState.currentIndex = 0;
@@ -1460,7 +1475,7 @@ homeButton.addEventListener("click", showStartScreen);
 quizHomeButton.addEventListener("click", showStartScreen);
 
 restartButton.addEventListener("click", createBoard);
-quizRestartButton.addEventListener("click", startQuiz);
+quizRestartButton.addEventListener("click", () => startQuiz());
 
 playAgainButton.addEventListener("click", function () {
   hideWinModal();
@@ -1491,7 +1506,7 @@ document.querySelectorAll(".quiz-dir-btn").forEach(btn => {
 });
 
 typeHomeButton.addEventListener("click", showStartScreen);
-typeRestartButton.addEventListener("click", startType);
+typeRestartButton.addEventListener("click", () => startType());
 
 document.getElementById("type-submit-btn").addEventListener("click", handleTypeSubmit);
 
