@@ -1,4 +1,4 @@
-const VERSION = "1.0";
+const VERSION = "2.0";
 
 const UNFLIP_DELAY_MS = 1000;
 const WIN_MODAL_DELAY_MS = 300;
@@ -398,6 +398,9 @@ const UI_TEXT = {
     lbSave:              "Save",
     lbSkip:              "Skip",
     lbNamePlaceholder:   "Your name",
+    btnLearn:            "🎓 Learn Geography",
+    learnTitle:          "🎓 Learn Geography",
+    learnSearchPlaceholder: "🔍 Search country or capital…",
   },
   he: {
     labelLanguage:     "שפה / Language",
@@ -466,6 +469,9 @@ const UI_TEXT = {
     lbSave:              "שמור",
     lbSkip:              "דלג",
     lbNamePlaceholder:   "השם שלך",
+    btnLearn:            "🎓 למד גיאוגרפיה",
+    learnTitle:          "🎓 למד גיאוגרפיה",
+    learnSearchPlaceholder: "🔍 חפש מדינה או בירה…",
   },
 };
 
@@ -1561,6 +1567,73 @@ async function startGame() {
   }
 }
 
+// ── Learn screen ───────────────────────────────────────────────────────────
+
+let learnObserver = null;
+
+function showLearnScreen() {
+  document.getElementById('start-screen').classList.add('hidden');
+  document.getElementById('learn-screen').classList.remove('hidden');
+  const t = UI_TEXT[selectedLanguage];
+  document.getElementById('learn-search').placeholder = t.learnSearchPlaceholder;
+  document.querySelector('[data-i18n="learnTitle"]').textContent = t.learnTitle;
+  document.querySelector('[data-i18n="btnLearn"]').textContent = t.btnLearn;
+  buildLearnList('');
+  loadWorldData(); // fire-and-forget; observer re-renders cells as data arrives
+}
+
+function buildLearnList(filter) {
+  const listEl = document.getElementById('learn-list');
+
+  // Disconnect previous observer
+  if (learnObserver) { learnObserver.disconnect(); learnObserver = null; }
+
+  const q = filter.trim().toLowerCase();
+  const sorted = [...allCountries].sort((a, b) => a.country.localeCompare(b.country));
+  const visible = q
+    ? sorted.filter(c =>
+        c.country.toLowerCase().includes(q) ||
+        c.nameHe.includes(filter.trim()) ||
+        c.capital.toLowerCase().includes(q) ||
+        (c.capitalHe || '').includes(filter.trim()))
+    : sorted;
+
+  listEl.innerHTML = '';
+  const isHe = selectedLanguage === 'he';
+
+  visible.forEach(country => {
+    const name    = isHe ? country.nameHe    : country.country;
+    const capital = isHe ? (country.capitalHe || country.capital) : country.capital;
+    const dir     = isHe ? ' dir="rtl"' : '';
+
+    const card = document.createElement('div');
+    card.className = 'learn-card';
+    card.innerHTML =
+      `<img class="learn-flag" src="https://flagcdn.com/w160/${country.code}.png" alt="${name}" loading="lazy">` +
+      `<div class="learn-info">` +
+        `<span class="learn-country-name"${dir}>${name}</span>` +
+        `<span class="learn-capital"${dir}>${capital}</span>` +
+      `</div>` +
+      `<div class="learn-map-cell" data-code="${country.code}">🗺️</div>`;
+
+    listEl.appendChild(card);
+  });
+
+  // Lazy-render SVG maps as cards scroll into view
+  learnObserver = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      const cell = entry.target;
+      if (cell.querySelector('svg')) return;
+      const svg = renderCountryMapSVG(cell.dataset.code);
+      if (svg) cell.innerHTML = svg;
+      learnObserver.unobserve(cell);
+    });
+  }, { rootMargin: '150px' });
+
+  listEl.querySelectorAll('.learn-map-cell').forEach(cell => learnObserver.observe(cell));
+}
+
 // ── Event listeners ────────────────────────────────────────────────────────
 
 document.querySelectorAll(".lang-btn").forEach(btn => {
@@ -1592,6 +1665,16 @@ document.querySelectorAll(".pairs-up-btn").forEach(btn => {
 });
 
 startButton.addEventListener("click", startGame);
+
+document.getElementById("learn-btn").addEventListener("click", showLearnScreen);
+document.getElementById("learn-home-btn").addEventListener("click", () => {
+  if (learnObserver) { learnObserver.disconnect(); learnObserver = null; }
+  document.getElementById('learn-screen').classList.add('hidden');
+  document.getElementById('start-screen').classList.remove('hidden');
+});
+document.getElementById("learn-search").addEventListener("input", e => {
+  buildLearnList(e.target.value);
+});
 
 homeButton.addEventListener("click", showStartScreen);
 quizHomeButton.addEventListener("click", showStartScreen);

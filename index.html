@@ -101,8 +101,23 @@
           </div>
         </div>
       </div>
+      <button id="learn-btn" class="learn-entry-btn" data-i18n="btnLearn">🎓 למד גיאוגרפיה</button>
       <p class="app-version"></p>
     </div>
+  </div>
+
+  <!-- ── Learn screen ───────────────────────────────────────────────────── -->
+  <div id="learn-screen" class="hidden">
+    <div class="learn-header">
+      <button id="learn-home-btn" class="ghost-btn" title="Back">🏠</button>
+      <span class="learn-title" data-i18n="learnTitle">🎓 למד גיאוגרפיה</span>
+      <div class="learn-header-spacer"></div>
+    </div>
+    <div class="learn-search-bar">
+      <input type="text" id="learn-search" class="learn-search-input"
+             autocomplete="off" autocorrect="off" spellcheck="false">
+    </div>
+    <div id="learn-list" class="learn-list"></div>
   </div>
 
   <div id="game-screen" class="hidden">
