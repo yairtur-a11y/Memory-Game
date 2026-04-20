@@ -19,7 +19,7 @@ const animalMembers = [
   {
     name: "Tiger",       nameHe: "נמר",
     code: "ani-tiger",   emoji: "🐯",    difficulty: "easy",
-    image: FP + "Walking_tiger_female.jpg?width=400",
+    image: FP + "Adult_male_Royal_Bengal_tiger.jpg?width=400",
   },
   {
     name: "Giraffe",     nameHe: "ג'ירפה",
@@ -81,12 +81,12 @@ const animalMembers = [
   {
     name: "Leopard",     nameHe: "נמר מנוקד",
     code: "ani-leopard", emoji: "🐆",    difficulty: "medium",
-    image: FP + "African_Leopard_5.JPG?width=400",
+    image: FP + "Male_leopard_-_Mara.jpg?width=400",
   },
   {
     name: "Rhinoceros",  nameHe: "קרנף",
     code: "ani-rhino",   emoji: "🦏",    difficulty: "medium",
-    image: FP + "White_Rhinoceros.jpg?width=400",
+    image: FP + "White_Rhino.jpg?width=400",
   },
   {
     name: "Camel",       nameHe: "גמל",
@@ -116,7 +116,7 @@ const animalMembers = [
   {
     name: "Moose",       nameHe: "אייל הצפון",
     code: "ani-moose",   emoji: "🫎",    difficulty: "medium",
-    image: FP + "Moose_Lake_Sunset.JPG?width=400",
+    image: FP + "Male_Moose.jpg?width=400",
   },
   {
     name: "Red Fox",     nameHe: "שועל אדום",
@@ -138,7 +138,7 @@ const animalMembers = [
   {
     name: "Blue Whale",  nameHe: "לווייתן כחול",
     code: "ani-bluewhale",emoji: "🐋",   difficulty: "hard",
-    image: FP + "Blue_whale_tail.JPG?width=400",
+    image: FP + "Blue_Whale_(Balaenoptera_musculus)_Mysticeti_baleen_whale.jpg?width=400",
   },
   {
     name: "Lynx",        nameHe: "לינקס",
@@ -148,7 +148,7 @@ const animalMembers = [
   {
     name: "Otter",       nameHe: "לוטרה",
     code: "ani-otter",   emoji: "🦦",    difficulty: "hard",
-    image: FP + "Fischotter_Lutra_Lutra.JPG?width=400",
+    image: FP + "Otter_Portrait_(24121714981).jpg?width=400",
   },
   {
     name: "Capybara",    nameHe: "קפיבארה",
