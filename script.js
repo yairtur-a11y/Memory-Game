@@ -1,4 +1,4 @@
-const VERSION = "3.0";
+const VERSION = "3.1";
 
 const UNFLIP_DELAY_MS = 1000;
 const WIN_MODAL_DELAY_MS = 300;
@@ -347,6 +347,7 @@ const UI_TEXT = {
     btnAmerica:        "🇺🇸 America",
     btnFamily:         "👨‍👩‍👧‍👦 Family",
     btnCars:           "🚗 Cars",
+    btnAnimals:        "🐾 Animals",
     btnFlags:          "🏳️ Flags",
     btnCapitals:       "🏙️ Capitals",
     btnMaps:           "🗺️ Maps",
@@ -380,6 +381,7 @@ const UI_TEXT = {
     subtitleFamily:          "Match every name to their photo",
     subtitleCarsFlags:       "Match every car brand to its logo",
     subtitleCarsCapitals:    "Match every car brand to its country of origin",
+    subtitleAnimals:         "Identify the animal in each photo",
     winYouWon:         "You Won!",
     winPerfect:        "Perfect!",
     winQuizDone:       "Quiz Done!",
@@ -423,6 +425,7 @@ const UI_TEXT = {
     btnAmerica:        "🇺🇸 אמריקה",
     btnFamily:         "👨‍👩‍👧‍👦 משפחה",
     btnCars:           "🚗 מכוניות",
+    btnAnimals:        "🐾 חיות",
     btnFlags:          "🏳️ דגלים",
     btnCapitals:       "🏙️ בירות",
     btnMaps:           "🗺️ מפות",
@@ -456,6 +459,7 @@ const UI_TEXT = {
     subtitleFamily:          "התאם כל שם לתמונה שלו",
     subtitleCarsFlags:       "התאם כל מותג רכב ללוגו שלו",
     subtitleCarsCapitals:    "התאם כל מותג רכב למדינת המוצא שלו",
+    subtitleAnimals:         "זהה את החיה בכל תמונה",
     winYouWon:         "ניצחת!",
     winPerfect:        "מושלם!",
     winQuizDone:       "סיום חידון!",
@@ -492,6 +496,8 @@ function updateSubtitle() {
     key = "subtitleFamily";
   } else if (selectedCategory === "cars") {
     key = selectedMode === "capitals" ? "subtitleCarsCapitals" : "subtitleCarsFlags";
+  } else if (selectedCategory === "animals") {
+    key = "subtitleAnimals";
   } else {
     key = "subtitle" +
       selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1) +
@@ -563,26 +569,28 @@ function setGameType(type) {
 }
 
 function updateSettingsVisibility() {
-  const isFamily = selectedCategory === "family";
-  const isCars   = selectedCategory === "cars";
+  const isFamily  = selectedCategory === "family";
+  const isCars    = selectedCategory === "cars";
+  const isAnimals = selectedCategory === "animals";
+  const isPhotoCategory = isFamily || isAnimals; // no mode row, no difficulty
 
-  // Mode row: hide for family; show for cars (logos/origin), but hide Maps button
+  // Mode row: hide for family and animals (photo-only categories)
   document.querySelectorAll("[data-setting='mode']").forEach(el => {
-    el.classList.toggle("setting-hidden", isFamily);
+    el.classList.toggle("setting-hidden", isPhotoCategory);
   });
-  // Hide Maps button when cars is selected (no map mode for brands)
+  // Hide Maps button for cars (logos/origin only) and reset if active
   document.querySelectorAll(".mode-btn[data-mode='maps']").forEach(btn => {
     btn.style.display = isCars ? "none" : "";
   });
-  // If cars was selected while maps was active, fall back to flags
   if (isCars && selectedMode === "maps") setMode("flags");
 
+  // Difficulty: hide for photo categories (all animals shown regardless)
   document.querySelectorAll("[data-setting='difficulty']").forEach(el => {
-    el.classList.toggle("setting-hidden", isFamily);
+    el.classList.toggle("setting-hidden", isPhotoCategory);
   });
 
-  // Quiz-direction: show for family+quiz OR cars+quiz (logo↔name)
-  const showDirection = (isFamily || isCars) && selectedGameType === "quiz";
+  // Quiz-direction: show for photo categories + cars in quiz mode
+  const showDirection = (isPhotoCategory || isCars) && selectedGameType === "quiz";
   document.querySelectorAll("[data-setting='quiz-direction']").forEach(el => {
     el.classList.toggle("setting-hidden", !showDirection);
   });
@@ -608,7 +616,8 @@ function setMode(mode) {
 }
 
 function getPoolForDifficulty(difficulty) {
-  if (selectedCategory === "family") return [...familyMembers];
+  if (selectedCategory === "family")  return [...familyMembers];
+  if (selectedCategory === "animals") return [...animalMembers];
   if (selectedCategory === "cars") {
     if (difficulty === "easy")  return carBrands.filter(c => c.difficulty === "easy");
     if (difficulty === "hard")  return carBrands.filter(c => c.difficulty === "hard");
@@ -895,10 +904,13 @@ function buildCardDeck() {
 
   const cards = [];
 
-  if (selectedCategory === "family") {
+  if (selectedCategory === "family" || selectedCategory === "animals") {
     for (const member of pool) {
-      cards.push({ type: "family-name",  display: member.name, pairId: member.code });
-      cards.push({ type: "family-photo", display: member.name, pairId: member.code, image: member.image });
+      const display = selectedCategory === "animals"
+        ? (selectedLanguage === "he" ? member.nameHe : member.name)
+        : member.name;
+      cards.push({ type: "family-name",  display, pairId: member.code });
+      cards.push({ type: "family-photo", display, pairId: member.code, image: member.image });
     }
     return { cards: shuffleArray(cards), columns: settings.columns };
   }
@@ -1329,6 +1341,14 @@ function renderPromptInEl(el, item, isTypeMode) {
     } else {
       el.innerHTML = `<img class="quiz-family-photo" src="${item.image}" alt="?">`;
     }
+  } else if (selectedCategory === "animals") {
+    if (!isTypeMode && selectedQuizDirection === "name-to-photo") {
+      const dir = selectedLanguage === "he" ? ' dir="rtl"' : "";
+      const label = selectedLanguage === "he" ? item.nameHe : item.name;
+      el.innerHTML = `<div class="quiz-text-prompt"${dir}>${label}</div>`;
+    } else {
+      el.innerHTML = `<img class="quiz-family-photo" src="${item.image}" alt="${item.emoji}" onerror="this.style.fontSize='80px';this.src='';this.alt='${item.emoji}'">`;
+    }
   } else if (selectedCategory === "cars") {
     if (!isTypeMode && selectedQuizDirection === "name-to-photo") {
       // Show brand name as text; answer buttons will show logos
@@ -1400,6 +1420,7 @@ function buildTypeQuestions() {
 
 function getValidAnswers(item) {
   if (selectedCategory === "family") return [item.name];
+  if (selectedCategory === "animals") return [item.name, item.nameHe].filter(Boolean);
   if (selectedMode === "capitals") {
     return [item.capital, item.capitalHe].filter(Boolean);
   }
@@ -1409,6 +1430,7 @@ function getValidAnswers(item) {
 
 function getPrimaryAnswer(item) {
   if (selectedCategory === "family") return item.name;
+  if (selectedCategory === "animals") return selectedLanguage === "he" ? item.nameHe : item.name;
   if (selectedMode === "capitals") {
     return selectedLanguage === "he" ? item.capitalHe : item.capital;
   }
@@ -1537,6 +1559,9 @@ function renderQuizQuestion() {
     if (selectedCategory === "family" && selectedQuizDirection === "name-to-photo") {
       btn.className = "answer-btn answer-photo-btn";
       btn.innerHTML = `<img src="${item.image}" alt="${item.name}">`;
+    } else if (selectedCategory === "animals" && selectedQuizDirection === "name-to-photo") {
+      btn.className = "answer-btn answer-photo-btn";
+      btn.innerHTML = `<img src="${item.image}" alt="${item.name}">`;
     } else if (selectedCategory === "cars" && selectedQuizDirection === "name-to-photo" && selectedMode !== "capitals") {
       btn.className = "answer-btn answer-photo-btn";
       btn.innerHTML = `<img src="${item.logo}" alt="${countryName(item)}" class="answer-car-logo">`;
@@ -1546,6 +1571,9 @@ function renderQuizQuestion() {
       if (selectedCategory === "family") {
         answerText = item.name;
         btn.setAttribute("dir", "rtl");
+      } else if (selectedCategory === "animals") {
+        answerText = selectedLanguage === "he" ? item.nameHe : item.name;
+        if (selectedLanguage === "he") btn.setAttribute("dir", "rtl");
       } else if (selectedMode === "capitals") {
         answerText = selectedCategory === "america" ? stateCapitalName(item) : capitalName(item);
         if (selectedLanguage === "he") btn.setAttribute("dir", "rtl");

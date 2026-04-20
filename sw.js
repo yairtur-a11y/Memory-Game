@@ -2,7 +2,7 @@
 // BUMP THIS VERSION on every push that changes any file.
 // Format: "vN" — just increment N each time (v2, v3, v4…)
 // ─────────────────────────────────────────────────────────────────────────────
-const CACHE_VERSION = "v3.0";
+const CACHE_VERSION = "v3.1";
 // ─────────────────────────────────────────────────────────────────────────────
 
 const CACHE_NAME = `memory-game-${CACHE_VERSION}`;
@@ -14,6 +14,7 @@ const ASSETS = [
   "./script.js",
   "./countries.js",
   "./cars.js",
+  "./animals.js",
   "./us-states.js",
   "./maps.js",
   "./family.js",
