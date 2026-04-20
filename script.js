@@ -1,4 +1,4 @@
-const VERSION = "2.0";
+const VERSION = "3.0";
 
 const UNFLIP_DELAY_MS = 1000;
 const WIN_MODAL_DELAY_MS = 300;
@@ -346,9 +346,12 @@ const UI_TEXT = {
     btnWorld:          "🌍 World",
     btnAmerica:        "🇺🇸 America",
     btnFamily:         "👨‍👩‍👧‍👦 Family",
+    btnCars:           "🚗 Cars",
     btnFlags:          "🏳️ Flags",
     btnCapitals:       "🏙️ Capitals",
     btnMaps:           "🗺️ Maps",
+    btnLogos:          "🚗 Logos",
+    btnOrigin:         "🌍 Origin",
     btnEasy:           "Easy",
     btnHard:           "Hard",
     btnMix:            "Mix",
@@ -375,6 +378,8 @@ const UI_TEXT = {
     subtitleAmericaCapitals: "Match every US state to its capital city",
     subtitleAmericaMaps:     "Match every US state to its location on the map",
     subtitleFamily:          "Match every name to their photo",
+    subtitleCarsFlags:       "Match every car brand to its logo",
+    subtitleCarsCapitals:    "Match every car brand to its country of origin",
     winYouWon:         "You Won!",
     winPerfect:        "Perfect!",
     winQuizDone:       "Quiz Done!",
@@ -417,9 +422,12 @@ const UI_TEXT = {
     btnWorld:          "🌍 עולם",
     btnAmerica:        "🇺🇸 אמריקה",
     btnFamily:         "👨‍👩‍👧‍👦 משפחה",
+    btnCars:           "🚗 מכוניות",
     btnFlags:          "🏳️ דגלים",
     btnCapitals:       "🏙️ בירות",
     btnMaps:           "🗺️ מפות",
+    btnLogos:          "🚗 לוגואים",
+    btnOrigin:         "🌍 מדינת מקור",
     btnEasy:           "קל",
     btnHard:           "קשה",
     btnMix:            "מיקס",
@@ -446,6 +454,8 @@ const UI_TEXT = {
     subtitleAmericaCapitals: "התאם כל מדינה בארה״ב לבירה שלה",
     subtitleAmericaMaps:     "התאם כל מדינה בארה״ב למיקום שלה במפה",
     subtitleFamily:          "התאם כל שם לתמונה שלו",
+    subtitleCarsFlags:       "התאם כל מותג רכב ללוגו שלו",
+    subtitleCarsCapitals:    "התאם כל מותג רכב למדינת המוצא שלו",
     winYouWon:         "ניצחת!",
     winPerfect:        "מושלם!",
     winQuizDone:       "סיום חידון!",
@@ -480,6 +490,8 @@ function updateSubtitle() {
   let key;
   if (selectedCategory === "family") {
     key = "subtitleFamily";
+  } else if (selectedCategory === "cars") {
+    key = selectedMode === "capitals" ? "subtitleCarsCapitals" : "subtitleCarsFlags";
   } else {
     key = "subtitle" +
       selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1) +
@@ -551,16 +563,28 @@ function setGameType(type) {
 }
 
 function updateSettingsVisibility() {
-  const isFamily     = selectedCategory === "family";
-  const isFamilyQuiz = isFamily && selectedGameType === "quiz";
+  const isFamily = selectedCategory === "family";
+  const isCars   = selectedCategory === "cars";
+
+  // Mode row: hide for family; show for cars (logos/origin), but hide Maps button
   document.querySelectorAll("[data-setting='mode']").forEach(el => {
     el.classList.toggle("setting-hidden", isFamily);
   });
+  // Hide Maps button when cars is selected (no map mode for brands)
+  document.querySelectorAll(".mode-btn[data-mode='maps']").forEach(btn => {
+    btn.style.display = isCars ? "none" : "";
+  });
+  // If cars was selected while maps was active, fall back to flags
+  if (isCars && selectedMode === "maps") setMode("flags");
+
   document.querySelectorAll("[data-setting='difficulty']").forEach(el => {
     el.classList.toggle("setting-hidden", isFamily);
   });
+
+  // Quiz-direction: show for family+quiz OR cars+quiz (logo↔name)
+  const showDirection = (isFamily || isCars) && selectedGameType === "quiz";
   document.querySelectorAll("[data-setting='quiz-direction']").forEach(el => {
-    el.classList.toggle("setting-hidden", !isFamilyQuiz);
+    el.classList.toggle("setting-hidden", !showDirection);
   });
 }
 
@@ -585,6 +609,11 @@ function setMode(mode) {
 
 function getPoolForDifficulty(difficulty) {
   if (selectedCategory === "family") return [...familyMembers];
+  if (selectedCategory === "cars") {
+    if (difficulty === "easy")  return carBrands.filter(c => c.difficulty === "easy");
+    if (difficulty === "hard")  return carBrands.filter(c => c.difficulty === "hard");
+    return shuffleArray([...carBrands]); // mix
+  }
   if (selectedCategory === "america") {
     if (difficulty === "easy") return usStates.filter(s => s.difficulty === "easy");
     if (difficulty === "hard") return usStates.filter(s => s.difficulty === "hard");
@@ -1120,6 +1149,22 @@ const FLAG_GROUPS = [
   ["ke", "tz", "ug", "rw", "bi", "mz", "zm", "zw", "ao"],
 ];
 
+// Pick 3 wrong-answer car brands: same country-of-origin first (confusable logos),
+// then same-or-harder difficulty, then rest.
+function pickCarDistractors(correct, pool) {
+  const DIFF_RANK = { easy: 0, medium: 1, hard: 2 };
+  const correctRank = DIFF_RANK[correct.difficulty] ?? 0;
+  const others = pool.filter(c => c.code !== correct.code);
+
+  const sameOrigin = shuffleArray(others.filter(c => c.capital === correct.capital));
+  const sameDiff   = shuffleArray(others.filter(c =>
+    c.capital !== correct.capital && (DIFF_RANK[c.difficulty] ?? 0) >= correctRank));
+  const rest       = shuffleArray(others.filter(c =>
+    c.capital !== correct.capital && (DIFF_RANK[c.difficulty] ?? 0) <  correctRank));
+
+  return [...sameOrigin, ...sameDiff, ...rest].slice(0, 3);
+}
+
 // Returns all country codes that share a FLAG_GROUP with the given code.
 function getFlagSimilar(code) {
   const result = new Set();
@@ -1202,6 +1247,9 @@ function buildQuizQuestions() {
         const extras = shuffleArray(pool.filter(c => c.code !== item.code && !used.has(c.code)));
         wrong = [...wrong, ...extras].slice(0, 3);
       }
+    } else if (selectedCategory === "cars") {
+      // Same origin-country brands first (e.g. BMW → Audi, Mercedes, Porsche)
+      wrong = pickCarDistractors(item, pool);
     } else if (selectedCategory === "world") {
       // Flags & capitals (world): prefer similar-flag / same-region countries,
       // then same-or-harder difficulty, so obvious mismatches never appear.
@@ -1280,6 +1328,19 @@ function renderPromptInEl(el, item, isTypeMode) {
       el.innerHTML = `<div class="quiz-text-prompt" dir="rtl">${item.name}</div>`;
     } else {
       el.innerHTML = `<img class="quiz-family-photo" src="${item.image}" alt="?">`;
+    }
+  } else if (selectedCategory === "cars") {
+    if (!isTypeMode && selectedQuizDirection === "name-to-photo") {
+      // Show brand name as text; answer buttons will show logos
+      const dir = selectedLanguage === "he" ? ' dir="rtl"' : "";
+      el.innerHTML = `<div class="quiz-text-prompt"${dir}>${countryName(item)}</div>`;
+    } else if (selectedMode === "capitals") {
+      // Show brand name; answer is country of origin
+      const dir = selectedLanguage === "he" ? ' dir="rtl"' : "";
+      el.innerHTML = `<div class="quiz-text-prompt"${dir}>${countryName(item)}</div>`;
+    } else {
+      // Show logo; answer is brand name
+      el.innerHTML = `<img class="quiz-car-logo" src="${item.logo}" alt="${countryName(item)}">`;
     }
   } else if (selectedMode === "flags") {
     el.innerHTML =
@@ -1476,6 +1537,9 @@ function renderQuizQuestion() {
     if (selectedCategory === "family" && selectedQuizDirection === "name-to-photo") {
       btn.className = "answer-btn answer-photo-btn";
       btn.innerHTML = `<img src="${item.image}" alt="${item.name}">`;
+    } else if (selectedCategory === "cars" && selectedQuizDirection === "name-to-photo" && selectedMode !== "capitals") {
+      btn.className = "answer-btn answer-photo-btn";
+      btn.innerHTML = `<img src="${item.logo}" alt="${countryName(item)}" class="answer-car-logo">`;
     } else {
       btn.className = "answer-btn";
       let answerText;
@@ -1571,15 +1635,22 @@ async function startGame() {
 
 let learnObserver = null;
 
-function showLearnScreen() {
+async function showLearnScreen() {
   document.getElementById('start-screen').classList.add('hidden');
-  document.getElementById('learn-screen').classList.remove('hidden');
+  const learnScreen = document.getElementById('learn-screen');
+  learnScreen.classList.remove('hidden');
+
   const t = UI_TEXT[selectedLanguage];
-  document.getElementById('learn-search').placeholder = t.learnSearchPlaceholder;
-  document.querySelector('[data-i18n="learnTitle"]').textContent = t.learnTitle;
-  document.querySelector('[data-i18n="btnLearn"]').textContent = t.btnLearn;
+  const searchEl = document.getElementById('learn-search');
+  searchEl.placeholder = t.learnSearchPlaceholder;
+  searchEl.value = '';
+
+  // Show a loading state while world data fetches
+  const listEl = document.getElementById('learn-list');
+  listEl.innerHTML = `<p style="text-align:center;color:#64748b;padding:40px 0">⏳ טוען מפות…</p>`;
+
+  await loadWorldData();
   buildLearnList('');
-  loadWorldData(); // fire-and-forget; observer re-renders cells as data arrives
 }
 
 function buildLearnList(filter) {
@@ -1626,8 +1697,11 @@ function buildLearnList(filter) {
       const cell = entry.target;
       if (cell.querySelector('svg')) return;
       const svg = renderCountryMapSVG(cell.dataset.code);
-      if (svg) cell.innerHTML = svg;
-      learnObserver.unobserve(cell);
+      if (svg) {
+        cell.innerHTML = svg;
+        learnObserver.unobserve(cell);
+      }
+      // If svg is null (bad geometry), leave observed so it can retry on re-scroll
     });
   }, { rootMargin: '150px' });
 

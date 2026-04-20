@@ -980,6 +980,28 @@ button {
   color: #166534;
 }
 
+/* ─── Cars: logo prompt ─── */
+.quiz-car-logo {
+  width: min(300px, 80vw);
+  height: min(200px, 54vw);
+  object-fit: contain;
+  border-radius: 16px;
+  background: white;
+  padding: 20px;
+  box-sizing: border-box;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+}
+
+.answer-car-logo {
+  width: 80px;
+  height: 54px;
+  object-fit: contain;
+  background: white;
+  border-radius: 8px;
+  padding: 6px;
+  box-sizing: border-box;
+}
+
 /* ─── Family: quiz photo prompt ─── */
 .quiz-family-photo {
   width: min(260px, 80vw);
