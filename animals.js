@@ -59,7 +59,7 @@ const animalMembers = [
   {
     name: "Cheetah",     nameHe: "ברדלס",
     code: "ani-cheetah", emoji: "🐆",    difficulty: "easy",
-    image: FP + "Cheetah1_modified.jpg?width=400",
+    image: FP + "Cheetah_(Acinonyx_jubatus)_female_2.jpg?width=400",
   },
   {
     name: "Hippopotamus",nameHe: "היפופוטם",
@@ -178,7 +178,7 @@ const animalMembers = [
   {
     name: "Wolverine",   nameHe: "גלוטון",
     code: "ani-wolverine",emoji: "🦡",   difficulty: "hard",
-    image: FP + "Wolverine_at_Alaska_Wildlife_Conservation_Center.jpg?width=400",
+    image: "https://upload.wikimedia.org/wikipedia/commons/7/7d/Wolverine_%28Gulo_gulo%29%2C_Korkeasaari.JPG",
   },
 
 ];

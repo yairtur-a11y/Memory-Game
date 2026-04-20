@@ -116,8 +116,9 @@ function shuffleArray(array) {
 // ── Personal best ──────────────────────────────────────────────────────────
 
 function getPbKey() {
-  const diff = selectedCategory === "family" ? "any" : selectedDifficulty;
-  const mode = selectedCategory === "family" ? "family" : selectedMode;
+  const pack = CONTENT_PACKS[selectedCategory];
+  const diff = pack.hasDifficulty ? selectedDifficulty : "any";
+  const mode = pack.supportedModes.length > 0 ? selectedMode : "photo";
   return `pb_${selectedGameType}_${selectedCategory}_${mode}_${diff}_${selectedPairs}`;
 }
 
@@ -166,8 +167,9 @@ function updatePbDisplay(t) {
 // ── Leaderboard ────────────────────────────────────────────────────────────
 
 function getLbKey() {
-  const diff = selectedCategory === "family" ? "any" : selectedDifficulty;
-  const mode = selectedCategory === "family" ? "family" : selectedMode;
+  const pack = CONTENT_PACKS[selectedCategory];
+  const diff = pack.hasDifficulty ? selectedDifficulty : "any";
+  const mode = pack.supportedModes.length > 0 ? selectedMode : "photo";
   return `lb_${selectedGameType}_${selectedCategory}_${mode}_${diff}_${selectedPairs}`;
 }
 
@@ -321,6 +323,17 @@ function showQuizScreen() {
 
 const MAX_PAIRS = 20;
 const DEFAULT_PAIRS = { easy: 4, hard: 6, mix: 8 };
+
+// ── Content pack descriptors ───────────────────────────────────────────────
+// Single source of truth for what each category supports.
+// Adding a new category = add one entry here + a data file.
+const CONTENT_PACKS = {
+  world:   { supportedModes: ["flags", "capitals", "maps"], hasDifficulty: true,  photoQuiz: false },
+  america: { supportedModes: ["flags", "capitals", "maps"], hasDifficulty: true,  photoQuiz: false },
+  cars:    { supportedModes: ["flags", "capitals"],         hasDifficulty: true,  photoQuiz: true  },
+  animals: { supportedModes: [],                            hasDifficulty: false, photoQuiz: true  },
+  family:  { supportedModes: [],                            hasDifficulty: false, photoQuiz: true  },
+};
 
 let selectedDifficulty = "mix";
 let selectedPairs = 6;
@@ -569,28 +582,30 @@ function setGameType(type) {
 }
 
 function updateSettingsVisibility() {
-  const isFamily  = selectedCategory === "family";
-  const isCars    = selectedCategory === "cars";
-  const isAnimals = selectedCategory === "animals";
-  const isPhotoCategory = isFamily || isAnimals; // no mode row, no difficulty
+  const pack = CONTENT_PACKS[selectedCategory];
 
-  // Mode row: hide for family and animals (photo-only categories)
+  // Mode row: hide for photo-only packs (no mode concept)
   document.querySelectorAll("[data-setting='mode']").forEach(el => {
-    el.classList.toggle("setting-hidden", isPhotoCategory);
+    el.classList.toggle("setting-hidden", pack.supportedModes.length === 0);
   });
-  // Hide Maps button for cars (logos/origin only) and reset if active
-  document.querySelectorAll(".mode-btn[data-mode='maps']").forEach(btn => {
-    btn.style.display = isCars ? "none" : "";
-  });
-  if (isCars && selectedMode === "maps") setMode("flags");
 
-  // Difficulty: hide for photo categories (all animals shown regardless)
+  // Show only mode buttons that this pack supports
+  document.querySelectorAll(".mode-btn").forEach(btn => {
+    btn.style.display = pack.supportedModes.includes(btn.dataset.mode) ? "" : "none";
+  });
+
+  // If current mode isn't supported by this pack, reset to first supported mode
+  if (pack.supportedModes.length > 0 && !pack.supportedModes.includes(selectedMode)) {
+    setMode(pack.supportedModes[0]);
+  }
+
+  // Difficulty: hide for packs where all items are always shown
   document.querySelectorAll("[data-setting='difficulty']").forEach(el => {
-    el.classList.toggle("setting-hidden", isPhotoCategory);
+    el.classList.toggle("setting-hidden", !pack.hasDifficulty);
   });
 
-  // Quiz-direction: show for photo categories + cars in quiz mode
-  const showDirection = (isPhotoCategory || isCars) && selectedGameType === "quiz";
+  // Quiz direction: show for packs that have a photo↔name axis, in quiz mode only
+  const showDirection = pack.photoQuiz && selectedGameType === "quiz";
   document.querySelectorAll("[data-setting='quiz-direction']").forEach(el => {
     el.classList.toggle("setting-hidden", !showDirection);
   });
@@ -1347,14 +1362,18 @@ function renderPromptInEl(el, item, isTypeMode) {
       const label = selectedLanguage === "he" ? item.nameHe : item.name;
       el.innerHTML = `<div class="quiz-text-prompt"${dir}>${label}</div>`;
     } else {
-      el.innerHTML = `<img class="quiz-family-photo" src="${item.image}" alt="${item.name}">`;
-      const img = el.querySelector("img");
+      const img = document.createElement("img");
+      img.className = "quiz-family-photo";
+      img.alt = item.name;
       img.addEventListener("error", () => {
         img.replaceWith(Object.assign(document.createElement("div"), {
           className: "quiz-animal-emoji",
           textContent: item.emoji,
         }));
       }, { once: true });
+      img.src = item.image;
+      el.innerHTML = "";
+      el.appendChild(img);
     }
   } else if (selectedCategory === "cars") {
     if (!isTypeMode && selectedQuizDirection === "name-to-photo") {
@@ -1569,7 +1588,6 @@ function renderQuizQuestion() {
     } else if (selectedCategory === "animals" && selectedQuizDirection === "name-to-photo") {
       btn.className = "answer-btn answer-photo-btn";
       const aimg = document.createElement("img");
-      aimg.src = item.image;
       aimg.alt = item.name;
       aimg.addEventListener("error", () => {
         aimg.replaceWith(Object.assign(document.createElement("span"), {
@@ -1577,6 +1595,7 @@ function renderQuizQuestion() {
           textContent: item.emoji,
         }));
       }, { once: true });
+      aimg.src = item.image;
       btn.appendChild(aimg);
     } else if (selectedCategory === "cars" && selectedQuizDirection === "name-to-photo" && selectedMode !== "capitals") {
       btn.className = "answer-btn answer-photo-btn";
