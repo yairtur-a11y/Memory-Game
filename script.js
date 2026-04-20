@@ -1,4 +1,4 @@
-const VERSION = "3.1";
+const VERSION = "3.2";
 
 const UNFLIP_DELAY_MS = 1000;
 const WIN_MODAL_DELAY_MS = 300;

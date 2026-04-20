@@ -49,12 +49,12 @@ const animalMembers = [
   {
     name: "Gorilla",     nameHe: "גורילה",
     code: "ani-gorilla", emoji: "🦍",    difficulty: "easy",
-    image: FP + "Gorilla_gorilla_gorilla01.jpg?width=400",
+    image: FP + "Male_silverback_Gorilla.JPG?width=400",
   },
   {
     name: "Kangaroo",    nameHe: "קנגורו",
     code: "ani-kangaroo",emoji: "🦘",    difficulty: "easy",
-    image: FP + "Male_eastern_grey_kangaroo.jpg?width=400",
+    image: FP + "Eastern_Grey_Kangaroo_Feeding.jpg?width=400",
   },
   {
     name: "Cheetah",     nameHe: "ברדלס",
@@ -64,14 +64,14 @@ const animalMembers = [
   {
     name: "Hippopotamus",nameHe: "היפופוטם",
     code: "ani-hippo",   emoji: "🦛",    difficulty: "easy",
-    image: FP + "Hippo_at_Serengeti_National_Park.jpg?width=400",
+    image: FP + "Hippo_Baby.JPG?width=400",
   },
 
   // ── MEDIUM ────────────────────────────────────────────────────────────────
   {
     name: "Wolf",        nameHe: "זאב",
     code: "ani-wolf",    emoji: "🐺",    difficulty: "medium",
-    image: FP + "YellowstonePark_WolfBlack.jpg?width=400",
+    image: FP + "Wolfblackeuro.jpg?width=400",
   },
   {
     name: "Brown Bear",  nameHe: "דוב חום",
@@ -81,7 +81,7 @@ const animalMembers = [
   {
     name: "Leopard",     nameHe: "נמר מנוקד",
     code: "ani-leopard", emoji: "🐆",    difficulty: "medium",
-    image: FP + "Leopard_Africa_edit.jpg?width=400",
+    image: FP + "African_Leopard_5.JPG?width=400",
   },
   {
     name: "Rhinoceros",  nameHe: "קרנף",
@@ -91,7 +91,7 @@ const animalMembers = [
   {
     name: "Camel",       nameHe: "גמל",
     code: "ani-camel",   emoji: "🐪",    difficulty: "medium",
-    image: FP + "Camel_in_Oman.jpg?width=400",
+    image: FP + "Dromedary_camel.jpg?width=400",
   },
   {
     name: "Koala",       nameHe: "קואלה",
@@ -106,7 +106,7 @@ const animalMembers = [
   {
     name: "Chimpanzee",  nameHe: "שימפנזה",
     code: "ani-chimp",   emoji: "🐒",    difficulty: "medium",
-    image: FP + "Chimpanzee_seated_-_Patricia_Figueira.jpg?width=400",
+    image: FP + "Chimps_wiki.JPG?width=400",
   },
   {
     name: "Jaguar",      nameHe: "יגואר",
@@ -116,12 +116,12 @@ const animalMembers = [
   {
     name: "Moose",       nameHe: "אייל הצפון",
     code: "ani-moose",   emoji: "🫎",    difficulty: "medium",
-    image: FP + "Moose-alcesalces.jpg?width=400",
+    image: FP + "Moose_Lake_Sunset.JPG?width=400",
   },
   {
     name: "Red Fox",     nameHe: "שועל אדום",
     code: "ani-fox",     emoji: "🦊",    difficulty: "medium",
-    image: FP + "Red_Fox_(Vulpes_vulpes)_-_British_Wildlife_Centre-edit2.jpg?width=400",
+    image: FP + "Red_Fox_(Vulpes_vulpes)_-British_Wildlife_Centre-8.jpg?width=400",
   },
   {
     name: "Meerkat",     nameHe: "סוריקטה",
@@ -138,7 +138,7 @@ const animalMembers = [
   {
     name: "Blue Whale",  nameHe: "לווייתן כחול",
     code: "ani-bluewhale",emoji: "🐋",   difficulty: "hard",
-    image: FP + "Blue_Whale_001.jpg?width=400",
+    image: FP + "Blue_whale_tail.JPG?width=400",
   },
   {
     name: "Lynx",        nameHe: "לינקס",
@@ -148,7 +148,7 @@ const animalMembers = [
   {
     name: "Otter",       nameHe: "לוטרה",
     code: "ani-otter",   emoji: "🦦",    difficulty: "hard",
-    image: FP + "Lutra_lutra-4.jpg?width=400",
+    image: FP + "Fischotter_Lutra_Lutra.JPG?width=400",
   },
   {
     name: "Capybara",    nameHe: "קפיבארה",
@@ -158,12 +158,12 @@ const animalMembers = [
   {
     name: "Bison",       nameHe: "ביזון",
     code: "ani-bison",   emoji: "🐃",    difficulty: "hard",
-    image: FP + "Bison_bison_bison_Wichita.jpg?width=400",
+    image: FP + "American_bison_k5680-1.jpg?width=400",
   },
   {
     name: "Warthog",     nameHe: "חזיר יבלות",
     code: "ani-warthog", emoji: "🐗",    difficulty: "hard",
-    image: FP + "Common_Warthog_2012.jpg?width=400",
+    image: FP + "Warthog_12.JPG?width=400",
   },
   {
     name: "Mandrill",    nameHe: "מנדריל",
@@ -173,7 +173,7 @@ const animalMembers = [
   {
     name: "Tapir",       nameHe: "טפיר",
     code: "ani-tapir",   emoji: "🐾",    difficulty: "hard",
-    image: FP + "Malayan_Tapir.jpg?width=400",
+    image: FP + "Malayan_Tapir_walking.JPG?width=400",
   },
   {
     name: "Wolverine",   nameHe: "גלוטון",
