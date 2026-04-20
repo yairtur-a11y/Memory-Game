@@ -1347,7 +1347,14 @@ function renderPromptInEl(el, item, isTypeMode) {
       const label = selectedLanguage === "he" ? item.nameHe : item.name;
       el.innerHTML = `<div class="quiz-text-prompt"${dir}>${label}</div>`;
     } else {
-      el.innerHTML = `<img class="quiz-family-photo" src="${item.image}" alt="${item.emoji}" onerror="this.style.fontSize='80px';this.src='';this.alt='${item.emoji}'">`;
+      el.innerHTML = `<img class="quiz-family-photo" src="${item.image}" alt="${item.name}">`;
+      const img = el.querySelector("img");
+      img.addEventListener("error", () => {
+        img.replaceWith(Object.assign(document.createElement("div"), {
+          className: "quiz-animal-emoji",
+          textContent: item.emoji,
+        }));
+      }, { once: true });
     }
   } else if (selectedCategory === "cars") {
     if (!isTypeMode && selectedQuizDirection === "name-to-photo") {
@@ -1561,7 +1568,16 @@ function renderQuizQuestion() {
       btn.innerHTML = `<img src="${item.image}" alt="${item.name}">`;
     } else if (selectedCategory === "animals" && selectedQuizDirection === "name-to-photo") {
       btn.className = "answer-btn answer-photo-btn";
-      btn.innerHTML = `<img src="${item.image}" alt="${item.name}">`;
+      const aimg = document.createElement("img");
+      aimg.src = item.image;
+      aimg.alt = item.name;
+      aimg.addEventListener("error", () => {
+        aimg.replaceWith(Object.assign(document.createElement("span"), {
+          className: "quiz-animal-emoji",
+          textContent: item.emoji,
+        }));
+      }, { once: true });
+      btn.appendChild(aimg);
     } else if (selectedCategory === "cars" && selectedQuizDirection === "name-to-photo" && selectedMode !== "capitals") {
       btn.className = "answer-btn answer-photo-btn";
       btn.innerHTML = `<img src="${item.logo}" alt="${countryName(item)}" class="answer-car-logo">`;

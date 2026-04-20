@@ -1012,6 +1012,16 @@ button {
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
 }
 
+/* ─── Animal emoji fallback ─── */
+.quiz-animal-emoji {
+  font-size: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: min(260px, 80vw);
+  height: min(260px, 80vw);
+}
+
 /* ─── Update banner ─── */
 .update-banner {
   position: fixed;

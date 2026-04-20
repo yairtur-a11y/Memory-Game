@@ -1,12 +1,7 @@
 // ── Mammals ────────────────────────────────────────────────────────────────
-// Fields mirror familyMembers so existing quiz/cards/type logic works:
-//   name / nameHe  → animal name
-//   image          → photo URL (Wikimedia Commons thumbnails)
-//   emoji          → fallback if image fails to load
-//   code           → unique id for answer matching
-//   difficulty     → "easy" | "medium" | "hard"
+// image → Special:FilePath URL (no MD5 hash needed; MediaWiki resolves it)
 
-const W = "https://upload.wikimedia.org/wikipedia/commons/thumb/";
+const FP = "https://commons.wikimedia.org/wiki/Special:FilePath/";
 
 const animalMembers = [
 
@@ -14,176 +9,176 @@ const animalMembers = [
   {
     name: "Lion",        nameHe: "אריה",
     code: "ani-lion",    emoji: "🦁",    difficulty: "easy",
-    image: W + "7/73/Lion_waiting_in_Namibia.jpg/400px-Lion_waiting_in_Namibia.jpg",
+    image: FP + "Lion_waiting_in_Namibia.jpg?width=400",
   },
   {
     name: "Elephant",    nameHe: "פיל",
     code: "ani-elephant",emoji: "🐘",    difficulty: "easy",
-    image: W + "3/37/African_Bush_Elephant.jpg/400px-African_Bush_Elephant.jpg",
+    image: FP + "African_Bush_Elephant.jpg?width=400",
   },
   {
     name: "Tiger",       nameHe: "נמר",
     code: "ani-tiger",   emoji: "🐯",    difficulty: "easy",
-    image: W + "3/3f/Walking_tiger_female.jpg/400px-Walking_tiger_female.jpg",
+    image: FP + "Walking_tiger_female.jpg?width=400",
   },
   {
     name: "Giraffe",     nameHe: "ג'ירפה",
     code: "ani-giraffe", emoji: "🦒",    difficulty: "easy",
-    image: W + "9/9e/Giraffe_Mikumi_National_Park.jpg/400px-Giraffe_Mikumi_National_Park.jpg",
+    image: FP + "Giraffe_Mikumi_National_Park.jpg?width=400",
   },
   {
     name: "Zebra",       nameHe: "זברה",
     code: "ani-zebra",   emoji: "🦓",    difficulty: "easy",
-    image: W + "e/e3/Plains_Zebra_Equus_quagga.jpg/400px-Plains_Zebra_Equus_quagga.jpg",
+    image: FP + "Plains_Zebra_Equus_quagga.jpg?width=400",
   },
   {
     name: "Giant Panda", nameHe: "פנדה ענקית",
     code: "ani-panda",   emoji: "🐼",    difficulty: "easy",
-    image: W + "0/0f/Grosser_Panda.JPG/400px-Grosser_Panda.JPG",
+    image: FP + "Grosser_Panda.JPG?width=400",
   },
   {
     name: "Polar Bear",  nameHe: "דוב קוטב",
     code: "ani-polarbear",emoji: "🐻‍❄️", difficulty: "easy",
-    image: W + "6/66/Polar_Bear_-_Alaska_%28cropped%29.jpg/400px-Polar_Bear_-_Alaska_%28cropped%29.jpg",
+    image: FP + "Polar_Bear_-_Alaska_(cropped).jpg?width=400",
   },
   {
     name: "Dolphin",     nameHe: "דולפין",
     code: "ani-dolphin", emoji: "🐬",    difficulty: "easy",
-    image: W + "1/10/Tursiops_truncatus_01.jpg/400px-Tursiops_truncatus_01.jpg",
+    image: FP + "Tursiops_truncatus_01.jpg?width=400",
   },
   {
     name: "Gorilla",     nameHe: "גורילה",
     code: "ani-gorilla", emoji: "🦍",    difficulty: "easy",
-    image: W + "b/bb/Gorilla_gorilla_gorilla01.jpg/400px-Gorilla_gorilla_gorilla01.jpg",
+    image: FP + "Gorilla_gorilla_gorilla01.jpg?width=400",
   },
   {
     name: "Kangaroo",    nameHe: "קנגורו",
     code: "ani-kangaroo",emoji: "🦘",    difficulty: "easy",
-    image: W + "0/00/Male_eastern_grey_kangaroo.jpg/400px-Male_eastern_grey_kangaroo.jpg",
+    image: FP + "Male_eastern_grey_kangaroo.jpg?width=400",
   },
   {
     name: "Cheetah",     nameHe: "ברדלס",
     code: "ani-cheetah", emoji: "🐆",    difficulty: "easy",
-    image: W + "a/a2/Cheetah1_modified.jpg/400px-Cheetah1_modified.jpg",
+    image: FP + "Cheetah1_modified.jpg?width=400",
   },
   {
     name: "Hippopotamus",nameHe: "היפופוטם",
     code: "ani-hippo",   emoji: "🦛",    difficulty: "easy",
-    image: W + "c/ca/Hippo_at_Serengeti_National_Park.jpg/400px-Hippo_at_Serengeti_National_Park.jpg",
+    image: FP + "Hippo_at_Serengeti_National_Park.jpg?width=400",
   },
 
   // ── MEDIUM ────────────────────────────────────────────────────────────────
   {
     name: "Wolf",        nameHe: "זאב",
     code: "ani-wolf",    emoji: "🐺",    difficulty: "medium",
-    image: W + "d/d9/YellowstonePark_WolfBlack.jpg/400px-YellowstonePark_WolfBlack.jpg",
+    image: FP + "YellowstonePark_WolfBlack.jpg?width=400",
   },
   {
     name: "Brown Bear",  nameHe: "דוב חום",
     code: "ani-brownbear",emoji: "🐻",   difficulty: "medium",
-    image: W + "5/5d/Kamchatka_Brown_Bear_near_Dvuhyurtochnoe_on_2015-07-23.jpg/400px-Kamchatka_Brown_Bear_near_Dvuhyurtochnoe_on_2015-07-23.jpg",
+    image: FP + "Kamchatka_Brown_Bear_near_Dvuhyurtochnoe_on_2015-07-23.jpg?width=400",
   },
   {
     name: "Leopard",     nameHe: "נמר מנוקד",
     code: "ani-leopard", emoji: "🐆",    difficulty: "medium",
-    image: W + "c/c5/Leopard_Africa_edit.jpg/400px-Leopard_Africa_edit.jpg",
+    image: FP + "Leopard_Africa_edit.jpg?width=400",
   },
   {
     name: "Rhinoceros",  nameHe: "קרנף",
     code: "ani-rhino",   emoji: "🦏",    difficulty: "medium",
-    image: W + "1/1a/White_Rhinoceros.jpg/400px-White_Rhinoceros.jpg",
+    image: FP + "White_Rhinoceros.jpg?width=400",
   },
   {
     name: "Camel",       nameHe: "גמל",
     code: "ani-camel",   emoji: "🐪",    difficulty: "medium",
-    image: W + "4/4d/Camel_in_Oman.jpg/400px-Camel_in_Oman.jpg",
+    image: FP + "Camel_in_Oman.jpg?width=400",
   },
   {
     name: "Koala",       nameHe: "קואלה",
     code: "ani-koala",   emoji: "🐨",    difficulty: "medium",
-    image: W + "4/49/Koala_climbing_tree.jpg/400px-Koala_climbing_tree.jpg",
+    image: FP + "Koala_climbing_tree.jpg?width=400",
   },
   {
     name: "Orangutan",   nameHe: "אורנגאוטן",
     code: "ani-orangutan",emoji: "🦧",   difficulty: "medium",
-    image: W + "b/be/Orang_Utan%2C_Semenggok_Forest_Reserve%2C_Sarawak%2C_Borneo%2C_Malaysia.JPG/400px-Orang_Utan%2C_Semenggok_Forest_Reserve%2C_Sarawak%2C_Borneo%2C_Malaysia.JPG",
+    image: FP + "Orang_Utan,_Semenggok_Forest_Reserve,_Sarawak,_Borneo,_Malaysia.JPG?width=400",
   },
   {
     name: "Chimpanzee",  nameHe: "שימפנזה",
     code: "ani-chimp",   emoji: "🐒",    difficulty: "medium",
-    image: W + "4/43/Chimpanzee_seated_-_Patricia_Figueira.jpg/400px-Chimpanzee_seated_-_Patricia_Figueira.jpg",
+    image: FP + "Chimpanzee_seated_-_Patricia_Figueira.jpg?width=400",
   },
   {
     name: "Jaguar",      nameHe: "יגואר",
     code: "ani-jaguar",  emoji: "🐆",    difficulty: "medium",
-    image: W + "0/0a/Standing_jaguar.jpg/400px-Standing_jaguar.jpg",
+    image: FP + "Standing_jaguar.jpg?width=400",
   },
   {
     name: "Moose",       nameHe: "אייל הצפון",
     code: "ani-moose",   emoji: "🫎",    difficulty: "medium",
-    image: W + "6/62/Moose-alcesalces.jpg/400px-Moose-alcesalces.jpg",
+    image: FP + "Moose-alcesalces.jpg?width=400",
   },
   {
     name: "Red Fox",     nameHe: "שועל אדום",
     code: "ani-fox",     emoji: "🦊",    difficulty: "medium",
-    image: W + "0/03/Red_Fox_%28Vulpes_vulpes%29_-_British_Wildlife_Centre-edit2.jpg/400px-Red_Fox_%28Vulpes_vulpes%29_-_British_Wildlife_Centre-edit2.jpg",
+    image: FP + "Red_Fox_(Vulpes_vulpes)_-_British_Wildlife_Centre-edit2.jpg?width=400",
   },
   {
     name: "Meerkat",     nameHe: "סוריקטה",
     code: "ani-meerkat", emoji: "🐾",    difficulty: "medium",
-    image: W + "c/cd/Suricata_suricatta.jpg/400px-Suricata_suricatta.jpg",
+    image: FP + "Suricata_suricatta.jpg?width=400",
   },
 
   // ── HARD ──────────────────────────────────────────────────────────────────
   {
     name: "Snow Leopard",nameHe: "נמר שלגים",
     code: "ani-snowleopard",emoji: "🐆", difficulty: "hard",
-    image: W + "2/2a/Schneeleopard.jpg/400px-Schneeleopard.jpg",
+    image: FP + "Schneeleopard.jpg?width=400",
   },
   {
     name: "Blue Whale",  nameHe: "לווייתן כחול",
     code: "ani-bluewhale",emoji: "🐋",   difficulty: "hard",
-    image: W + "1/1c/Blue_Whale_001.jpg/400px-Blue_Whale_001.jpg",
+    image: FP + "Blue_Whale_001.jpg?width=400",
   },
   {
     name: "Lynx",        nameHe: "לינקס",
     code: "ani-lynx",    emoji: "🐱",    difficulty: "hard",
-    image: W + "6/68/Lynx_lynx_poing.jpg/400px-Lynx_lynx_poing.jpg",
+    image: FP + "Lynx_lynx_poing.jpg?width=400",
   },
   {
     name: "Otter",       nameHe: "לוטרה",
     code: "ani-otter",   emoji: "🦦",    difficulty: "hard",
-    image: W + "3/38/Lutra_lutra-4.jpg/400px-Lutra_lutra-4.jpg",
+    image: FP + "Lutra_lutra-4.jpg?width=400",
   },
   {
     name: "Capybara",    nameHe: "קפיבארה",
     code: "ani-capybara",emoji: "🐾",    difficulty: "hard",
-    image: W + "e/ec/Capybara_%28Hydrochoerus_hydrochaeris%29.JPG/400px-Capybara_%28Hydrochoerus_hydrochaeris%29.JPG",
+    image: FP + "Capybara_(Hydrochoerus_hydrochaeris).JPG?width=400",
   },
   {
     name: "Bison",       nameHe: "ביזון",
     code: "ani-bison",   emoji: "🐃",    difficulty: "hard",
-    image: W + "7/71/Bison_bison_bison_Wichita.jpg/400px-Bison_bison_bison_Wichita.jpg",
+    image: FP + "Bison_bison_bison_Wichita.jpg?width=400",
   },
   {
     name: "Warthog",     nameHe: "חזיר יבלות",
     code: "ani-warthog", emoji: "🐗",    difficulty: "hard",
-    image: W + "6/63/Common_Warthog_2012.jpg/400px-Common_Warthog_2012.jpg",
+    image: FP + "Common_Warthog_2012.jpg?width=400",
   },
   {
     name: "Mandrill",    nameHe: "מנדריל",
     code: "ani-mandrill",emoji: "🐒",    difficulty: "hard",
-    image: W + "8/8a/Mandrill_at_SF_Zoo.jpg/400px-Mandrill_at_SF_Zoo.jpg",
+    image: FP + "Mandrill_at_SF_Zoo.jpg?width=400",
   },
   {
     name: "Tapir",       nameHe: "טפיר",
     code: "ani-tapir",   emoji: "🐾",    difficulty: "hard",
-    image: W + "5/5f/Malayan_Tapir.jpg/400px-Malayan_Tapir.jpg",
+    image: FP + "Malayan_Tapir.jpg?width=400",
   },
   {
     name: "Wolverine",   nameHe: "גלוטון",
     code: "ani-wolverine",emoji: "🦡",   difficulty: "hard",
-    image: W + "7/7f/Wolverine_at_Alaska_Wildlife_Conservation_Center.jpg/400px-Wolverine_at_Alaska_Wildlife_Conservation_Center.jpg",
+    image: FP + "Wolverine_at_Alaska_Wildlife_Conservation_Center.jpg?width=400",
   },
 
 ];
