@@ -66,12 +66,77 @@ const animalMembers = [
     code: "ani-hippo",   emoji: "🦛",    difficulty: "easy",
     image: FP + "Hippo_Baby.JPG?width=400",
   },
+  {
+    name: "Penguin",     nameHe: "פינגווין",
+    code: "ani-penguin", emoji: "🐧",    difficulty: "easy",
+    image: FP + "Emperor-walk_hg.jpg?width=400",
+  },
+  {
+    name: "Flamingo",    nameHe: "פלמינגו",
+    code: "ani-flamingo",emoji: "🦩",    difficulty: "easy",
+    image: FP + "Flamingo_Stretching_Wings_in_Water.jpg?width=400",
+  },
+  {
+    name: "Shark",       nameHe: "כריש",
+    code: "ani-shark",   emoji: "🦈",    difficulty: "easy",
+    image: FP + "White_shark.jpg?width=400",
+  },
+  {
+    name: "Dog",         nameHe: "כלב",
+    code: "ani-dog",     emoji: "🐕",    difficulty: "easy",
+    image: FP + "Golden_retriever.jpg?width=400",
+  },
+  {
+    name: "Cat",         nameHe: "חתול",
+    code: "ani-cat",     emoji: "🐱",    difficulty: "easy",
+    image: FP + "European_shorthair_procumbent_Quincy.jpg?width=400",
+  },
+  {
+    name: "Horse",       nameHe: "סוס",
+    code: "ani-horse",   emoji: "🐴",    difficulty: "easy",
+    image: FP + "IcelandicHorseInWinter.jpg?width=400",
+  },
+  {
+    name: "Cow",         nameHe: "פרה",
+    code: "ani-cow",     emoji: "🐄",    difficulty: "easy",
+    image: FP + "Cow_portrait.jpg?width=400",
+  },
+  {
+    name: "Sheep",       nameHe: "כבש",
+    code: "ani-sheep",   emoji: "🐑",    difficulty: "easy",
+    image: FP + "Sheep_looking_to_the_right.jpg?width=400",
+  },
+  {
+    name: "Rabbit",      nameHe: "ארנב",
+    code: "ani-rabbit",  emoji: "🐰",    difficulty: "easy",
+    image: FP + "Bright_Ears_(9338800710).jpg?width=400",
+  },
+  {
+    name: "Duck",        nameHe: "ברווז",
+    code: "ani-duck",    emoji: "🦆",    difficulty: "easy",
+    image: FP + "A_Mallard_duck.jpg?width=400",
+  },
+  {
+    name: "Donkey",      nameHe: "חמור",
+    code: "ani-donkey",  emoji: "🫏",    difficulty: "easy",
+    image: FP + "Donkey_in_Clovelly,_North_Devon,_England.jpg?width=400",
+  },
+  {
+    name: "Goat",        nameHe: "עז",
+    code: "ani-goat",    emoji: "🐐",    difficulty: "easy",
+    image: FP + "Brown_female_goat.jpg?width=400",
+  },
+  {
+    name: "Rooster",     nameHe: "תרנגול",
+    code: "ani-rooster", emoji: "🐓",    difficulty: "easy",
+    image: FP + "Rooster04_adjusted.jpg?width=400",
+  },
 
   // ── MEDIUM ────────────────────────────────────────────────────────────────
   {
     name: "Wolf",        nameHe: "זאב",
     code: "ani-wolf",    emoji: "🐺",    difficulty: "medium",
-    image: FP + "Wolfblackeuro.jpg?width=400",
+    image: FP + "Mexican_Wolf_2_yfb-edit_1.jpg?width=400",
   },
   {
     name: "Brown Bear",  nameHe: "דוב חום",
@@ -91,7 +156,7 @@ const animalMembers = [
   {
     name: "Camel",       nameHe: "גמל",
     code: "ani-camel",   emoji: "🐪",    difficulty: "medium",
-    image: FP + "Dromedary_camel.jpg?width=400",
+    image: FP + "Dromedary_in_Thar_desert.jpg?width=400",
   },
   {
     name: "Koala",       nameHe: "קואלה",
@@ -106,12 +171,12 @@ const animalMembers = [
   {
     name: "Chimpanzee",  nameHe: "שימפנזה",
     code: "ani-chimp",   emoji: "🐒",    difficulty: "medium",
-    image: FP + "Chimps_wiki.JPG?width=400",
+    image: FP + "Young_male_chimp.png?width=400",
   },
   {
     name: "Jaguar",      nameHe: "יגואר",
     code: "ani-jaguar",  emoji: "🐆",    difficulty: "medium",
-    image: FP + "Standing_jaguar.jpg?width=400",
+    image: FP + "Jaguar_(Panthera_onca_palustris)_male_Three_Brothers_River_2.jpg?width=400",
   },
   {
     name: "Moose",       nameHe: "אייל הצפון",
@@ -127,6 +192,26 @@ const animalMembers = [
     name: "Meerkat",     nameHe: "סוריקטה",
     code: "ani-meerkat", emoji: "🐾",    difficulty: "medium",
     image: FP + "Suricata_suricatta.jpg?width=400",
+  },
+  {
+    name: "Crocodile",   nameHe: "תמסח",
+    code: "ani-crocodile",emoji: "🐊",   difficulty: "medium",
+    image: FP + "NileCrocodile.jpg?width=400",
+  },
+  {
+    name: "Bald Eagle",  nameHe: "עיט",
+    code: "ani-baldeagle",emoji: "🦅",   difficulty: "medium",
+    image: FP + "Bald_eagle_head_frontal.jpg?width=400",
+  },
+  {
+    name: "Sloth",       nameHe: "עצלן",
+    code: "ani-sloth",   emoji: "🦥",    difficulty: "medium",
+    image: FP + "Two-toed_sloth_Costa_Rica.jpg?width=400",
+  },
+  {
+    name: "Peacock",     nameHe: "טווס",
+    code: "ani-peacock", emoji: "🦚",    difficulty: "medium",
+    image: FP + "Peacock_Dance.jpg?width=400",
   },
 
   // ── HARD ──────────────────────────────────────────────────────────────────
@@ -173,12 +258,17 @@ const animalMembers = [
   {
     name: "Tapir",       nameHe: "טפיר",
     code: "ani-tapir",   emoji: "🐾",    difficulty: "hard",
-    image: FP + "Malayan_Tapir_walking.JPG?width=400",
+    image: FP + "Malayan_Tapir_001.jpg?width=400",
   },
   {
-    name: "Wolverine",   nameHe: "גלוטון",
-    code: "ani-wolverine",emoji: "🦡",   difficulty: "hard",
-    image: "https://upload.wikimedia.org/wikipedia/commons/7/7d/Wolverine_%28Gulo_gulo%29%2C_Korkeasaari.JPG",
+    name: "Toucan",      nameHe: "טוקן",
+    code: "ani-toucan",  emoji: "🐦",    difficulty: "hard",
+    image: FP + "Ramphastos_sulfuratus_-bird_park_-Honduras.jpg?width=400",
+  },
+  {
+    name: "Octopus",     nameHe: "תמנון",
+    code: "ani-octopus", emoji: "🐙",    difficulty: "hard",
+    image: FP + "Octopus_Vulgaris.jpg?width=400",
   },
 
 ];
