@@ -697,7 +697,7 @@ const mapSvgCache = {};
 async function loadWorldData() {
   if (worldData) return;
   try {
-    const res = await fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json");
+    const res = await fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json");
     worldData = await res.json();
   } catch (e) {
     console.error("Failed to load world map data:", e);
@@ -1294,7 +1294,7 @@ function buildQuizQuestions() {
 
 // fitToView=true → start at full map (d3.zoomIdentity); used for US states
 // fitToView=false (default) → start zoomed in on the target feature
-function applyMapZoom(container, fitToView = false) {
+function applyMapZoom(container, fitToView = false, showControls = true) {
   const svg = container.querySelector('svg');
   if (!svg) return;
   const g = svg.querySelector('.map-layer');
@@ -1327,23 +1327,24 @@ function applyMapZoom(container, fitToView = false) {
     .call(zoomBehavior)
     .call(zoomBehavior.transform, initTransform);
 
-  // Floating zoom controls
-  const controls = document.createElement('div');
-  controls.className = 'map-zoom-controls';
-  controls.innerHTML =
-    `<button class="map-zoom-btn" data-zoom="in"    title="Zoom in">+</button>` +
-    `<button class="map-zoom-btn" data-zoom="reset" title="Reset view">⌖</button>` +
-    `<button class="map-zoom-btn" data-zoom="out"   title="Zoom out">−</button>`;
-  container.appendChild(controls);
+  if (showControls) {
+    const controls = document.createElement('div');
+    controls.className = 'map-zoom-controls';
+    controls.innerHTML =
+      `<button class="map-zoom-btn" data-zoom="in"    title="Zoom in">+</button>` +
+      `<button class="map-zoom-btn" data-zoom="reset" title="Reset view">⌖</button>` +
+      `<button class="map-zoom-btn" data-zoom="out"   title="Zoom out">−</button>`;
+    container.appendChild(controls);
 
-  controls.addEventListener('click', e => {
-    const btn = e.target.closest('[data-zoom]');
-    if (!btn) return;
-    const action = btn.dataset.zoom;
-    if      (action === 'in')    svgSel.transition().duration(250).call(zoomBehavior.scaleBy, 1.6);
-    else if (action === 'out')   svgSel.transition().duration(250).call(zoomBehavior.scaleBy, 1 / 1.6);
-    else                         svgSel.transition().duration(300).call(zoomBehavior.transform, initTransform);
-  });
+    controls.addEventListener('click', e => {
+      const btn = e.target.closest('[data-zoom]');
+      if (!btn) return;
+      const action = btn.dataset.zoom;
+      if      (action === 'in')    svgSel.transition().duration(250).call(zoomBehavior.scaleBy, 1.6);
+      else if (action === 'out')   svgSel.transition().duration(250).call(zoomBehavior.scaleBy, 1 / 1.6);
+      else                         svgSel.transition().duration(300).call(zoomBehavior.transform, initTransform);
+    });
+  }
 }
 
 // ── Shared prompt rendering ────────────────────────────────────────────────
@@ -1758,13 +1759,17 @@ function buildLearnList(filter) {
     entries.forEach(entry => {
       if (!entry.isIntersecting) return;
       const cell = entry.target;
-      if (cell.querySelector('svg')) return;
+      if (cell.dataset.rendered) return;
       const svg = renderCountryMapSVG(cell.dataset.code);
       if (svg) {
         cell.innerHTML = svg;
-        learnObserver.unobserve(cell);
+        applyMapZoom(cell, false, false);
+      } else {
+        // Fallback: flag image for microstates / tiny islands not in TopoJSON
+        cell.innerHTML = `<img class="learn-map-flag-fallback" src="https://flagcdn.com/w160/${cell.dataset.code}.png" alt="">`;
       }
-      // If svg is null (bad geometry), leave observed so it can retry on re-scroll
+      cell.dataset.rendered = '1';
+      learnObserver.unobserve(cell);
     });
   }, { rootMargin: '150px' });
 

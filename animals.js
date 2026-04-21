@@ -136,7 +136,7 @@ const animalMembers = [
   {
     name: "Wolf",        nameHe: "זאב",
     code: "ani-wolf",    emoji: "🐺",    difficulty: "medium",
-    image: FP + "Mexican_Wolf_2_yfb-edit_1.jpg?width=400",
+    image: FP + "Black_Canis_lupus.jpg?width=400",
   },
   {
     name: "Brown Bear",  nameHe: "דוב חום",
@@ -151,7 +151,7 @@ const animalMembers = [
   {
     name: "Rhinoceros",  nameHe: "קרנף",
     code: "ani-rhino",   emoji: "🦏",    difficulty: "medium",
-    image: FP + "White_Rhino.jpg?width=400",
+    image: FP + "White_Rhino_in_Lake_Nakuru_2.jpg?width=400",
   },
   {
     name: "Camel",       nameHe: "גמל",
@@ -176,7 +176,7 @@ const animalMembers = [
   {
     name: "Jaguar",      nameHe: "יגואר",
     code: "ani-jaguar",  emoji: "🐆",    difficulty: "medium",
-    image: FP + "Jaguar_(Panthera_onca_palustris)_male_Three_Brothers_River_2.jpg?width=400",
+    image: FP + "Jaguar_animal_panthera_onca.jpg?width=400",
   },
   {
     name: "Moose",       nameHe: "אייל הצפון",
